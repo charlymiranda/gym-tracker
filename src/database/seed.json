@@ -1,0 +1,44 @@
+[
+  {
+    "id": "sys-bench-press",
+    "type": "system",
+    "name": "Press de Banca Plano",
+    "primary_muscle_group": "Pecho",
+    "secondary_muscle_groups": "Tríceps, Hombros",
+    "equipment_type": "Barra",
+    "movement_pattern": "Empuje Horizontal",
+    "exercise_type": "compound",
+    "is_unilateral": 0,
+    "difficulty": "Intermedio",
+    "instructions": "Acuéstate en el banco, agarra la barra a la altura de los hombros, baja la barra al pecho y empuja hacia arriba.",
+    "tags": "pecho, fuerza, powerlifting"
+  },
+  {
+    "id": "sys-squat",
+    "type": "system",
+    "name": "Sentadilla Libre",
+    "primary_muscle_group": "Cuádriceps",
+    "secondary_muscle_groups": "Glúteos, Isquiotibiales, Core",
+    "equipment_type": "Barra",
+    "movement_pattern": "Sentadilla",
+    "exercise_type": "compound",
+    "is_unilateral": 0,
+    "difficulty": "Intermedio",
+    "instructions": "Con la barra sobre los trapecios, baja rompiendo el paralelo y vuelve a subir de forma controlada.",
+    "tags": "piernas, fuerza"
+  },
+  {
+    "id": "sys-deadlift",
+    "type": "system",
+    "name": "Peso Muerto",
+    "primary_muscle_group": "Isquiotibiales",
+    "secondary_muscle_groups": "Glúteos, Espalda baja, Antebrazos",
+    "equipment_type": "Barra",
+    "movement_pattern": "Bisagra de Cadera",
+    "exercise_type": "compound",
+    "is_unilateral": 0,
+    "difficulty": "Avanzado",
+    "instructions": "Desde el suelo, levanta la barra extendiendo rodillas y caderas simultáneamente manteniendo la espalda recta.",
+    "tags": "espalda, piernas, fuerza, powerlifting"
+  }
+]
