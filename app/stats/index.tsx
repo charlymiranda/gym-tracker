@@ -3,6 +3,8 @@ import { useSQLiteContext } from 'expo-sqlite';
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { StatsRepository, GeneralStats } from '../../src/repositories/stats-repository';
+import { theme } from '../../src/themes/colors';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function StatsScreen() {
   const db = useSQLiteContext();
@@ -17,37 +19,36 @@ export default function StatsScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.headerTitle}>Tu Progreso General</Text>
+      <Text style={styles.headerTitle}>Resumen General</Text>
       
-      {stats ? (
-        <View style={styles.grid}>
-          <View style={styles.card}>
-            <Text style={styles.value}>{stats.totalSessions}</Text>
-            <Text style={styles.label}>Sesiones Completadas</Text>
-          </View>
-          <View style={styles.card}>
-            <Text style={styles.value}>{stats.totalSets}</Text>
-            <Text style={styles.label}>Series Realizadas</Text>
-          </View>
-          <View style={[styles.card, styles.fullWidthCard]}>
-            <Text style={styles.value}>{stats.totalVolume.toLocaleString()} kg</Text>
-            <Text style={styles.label}>Volumen Total Movido</Text>
-          </View>
+      <View style={styles.grid}>
+        <View style={styles.statCard}>
+          <Ionicons name="calendar" size={32} color={theme.colors.primary} />
+          <Text style={styles.statValue}>{stats?.totalSessions || 0}</Text>
+          <Text style={styles.statLabel}>Entrenamientos</Text>
         </View>
-      ) : (
-        <Text style={styles.loading}>Calculando estadísticas...</Text>
-      )}
+
+        <View style={styles.statCard}>
+          <Ionicons name="barbell" size={32} color={'#6366f1'} />
+          <Text style={styles.statValue}>{stats?.totalSets || 0}</Text>
+          <Text style={styles.statLabel}>Series (Sets)</Text>
+        </View>
+
+        <View style={[styles.statCard, { width: '100%' }]}>
+          <Ionicons name="trending-up" size={32} color={'#f59e0b'} />
+          <Text style={styles.statValue}>{stats?.totalVolume.toLocaleString() || 0} kg</Text>
+          <Text style={styles.statLabel}>Volumen Total Levantado</Text>
+        </View>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: '#f5f5f5' },
-  headerTitle: { fontSize: 28, fontWeight: 'bold', marginVertical: 24, textAlign: 'center', color: '#111' },
+  container: { flex: 1, padding: 20, backgroundColor: theme.colors.background },
+  headerTitle: { fontSize: 24, fontWeight: 'bold', marginBottom: 24, color: theme.colors.text },
   grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
-  card: { backgroundColor: 'white', width: '48%', padding: 20, borderRadius: 12, marginBottom: 16, alignItems: 'center', elevation: 2, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 4, shadowOffset: { width: 0, height: 2 } },
-  fullWidthCard: { width: '100%' },
-  value: { fontSize: 32, fontWeight: 'bold', color: '#007AFF' },
-  label: { fontSize: 14, color: '#666', marginTop: 8, textAlign: 'center' },
-  loading: { textAlign: 'center', marginTop: 40, color: '#999' }
+  statCard: { width: '48%', backgroundColor: theme.colors.card, padding: 20, borderRadius: theme.borderRadius.lg, alignItems: 'center', marginBottom: 16, elevation: 2 },
+  statValue: { fontSize: 28, fontWeight: 'bold', color: theme.colors.text, marginTop: 12 },
+  statLabel: { fontSize: 12, color: theme.colors.textSecondary, textTransform: 'uppercase', marginTop: 4, textAlign: 'center' }
 });

@@ -3,6 +3,8 @@ import { Link, useFocusEffect } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useCallback, useState } from 'react';
 import { ExerciseRepository, Exercise } from '../../src/repositories/exercise-repository';
+import { theme } from '../../src/themes/colors';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function ExercisesListScreen() {
   const db = useSQLiteContext();
@@ -19,7 +21,7 @@ export default function ExercisesListScreen() {
     <View style={styles.container}>
       <Link href="/exercises/new" asChild>
         <Pressable style={styles.fab}>
-          <Text style={styles.fabText}>+</Text>
+          <Ionicons name="add" size={32} color="white" />
         </Pressable>
       </Link>
       
@@ -44,12 +46,11 @@ export default function ExercisesListScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: '#f5f5f5' },
-  card: { backgroundColor: 'white', padding: 16, borderRadius: 8, marginBottom: 12, elevation: 2, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 4, shadowOffset: { width: 0, height: 2 } },
+  container: { flex: 1, padding: 16, backgroundColor: theme.colors.background },
+  card: { backgroundColor: theme.colors.card, padding: 16, borderRadius: theme.borderRadius.lg, marginBottom: 12, elevation: 2, shadowColor: '#000', shadowOpacity: 0.3, shadowRadius: 4, shadowOffset: { width: 0, height: 2 } },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  name: { fontSize: 18, fontWeight: 'bold', flex: 1 },
-  badge: { backgroundColor: '#e0f2fe', color: '#0284c7', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12, fontSize: 12, overflow: 'hidden' },
-  meta: { fontSize: 14, color: '#666', marginTop: 8 },
-  fab: { position: 'absolute', right: 20, bottom: 20, width: 56, height: 56, borderRadius: 28, backgroundColor: '#007AFF', justifyContent: 'center', alignItems: 'center', zIndex: 10, elevation: 4 },
-  fabText: { fontSize: 32, color: 'white', fontWeight: 'bold', marginTop: -2 }
+  name: { fontSize: 18, fontWeight: 'bold', flex: 1, color: theme.colors.text },
+  badge: { backgroundColor: theme.colors.badgeBg, color: theme.colors.badgeText, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12, fontSize: 12, overflow: 'hidden' },
+  meta: { fontSize: 14, color: theme.colors.textSecondary, marginTop: 8 },
+  fab: { position: 'absolute', right: 20, bottom: 20, width: 56, height: 56, borderRadius: 28, backgroundColor: theme.colors.primary, justifyContent: 'center', alignItems: 'center', zIndex: 10, elevation: 4 }
 });

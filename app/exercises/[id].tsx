@@ -4,6 +4,7 @@ import { useSQLiteContext } from 'expo-sqlite';
 import { useState, useCallback } from 'react';
 import { ProgressRepository } from '../../src/repositories/stats-repository';
 import { ExerciseRepository, Exercise } from '../../src/repositories/exercise-repository';
+import { theme } from '../../src/themes/colors';
 
 export default function ExerciseDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -27,9 +28,7 @@ export default function ExerciseDetailScreen() {
   );
   
   if (!exercise) {
-    return (
-      <View style={styles.center}><Text>Cargando ejercicio...</Text></View>
-    );
+    return <View style={styles.center}><Text style={styles.loadingText}>Cargando ejercicio...</Text></View>;
   }
 
   return (
@@ -53,13 +52,14 @@ export default function ExerciseDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: '#f5f5f5' },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 20 },
-  card: { backgroundColor: 'white', padding: 16, borderRadius: 12, marginBottom: 16, elevation: 1 },
-  metaLabel: { fontSize: 12, color: '#666', textTransform: 'uppercase', marginBottom: 4 },
-  metaValue: { fontSize: 18, fontWeight: 'bold', marginBottom: 16 },
-  recordCard: { backgroundColor: '#e0f2fe', padding: 20, borderRadius: 12, alignItems: 'center', marginTop: 8 },
-  recordTitle: { fontSize: 14, color: '#0284c7', textTransform: 'uppercase', fontWeight: 'bold' },
-  recordValue: { fontSize: 36, fontWeight: 'bold', color: '#0369a1', marginTop: 8 }
+  container: { flex: 1, padding: 16, backgroundColor: theme.colors.background },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.background },
+  loadingText: { color: theme.colors.textSecondary },
+  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 20, color: theme.colors.text },
+  card: { backgroundColor: theme.colors.card, padding: 20, borderRadius: theme.borderRadius.lg, marginBottom: 16, elevation: 1 },
+  metaLabel: { fontSize: 12, color: theme.colors.textSecondary, textTransform: 'uppercase', marginBottom: 4 },
+  metaValue: { fontSize: 18, fontWeight: 'bold', marginBottom: 16, color: theme.colors.text },
+  recordCard: { backgroundColor: theme.colors.badgeBg, padding: 24, borderRadius: theme.borderRadius.lg, alignItems: 'center', marginTop: 8 },
+  recordTitle: { fontSize: 14, color: theme.colors.badgeText, textTransform: 'uppercase', fontWeight: 'bold' },
+  recordValue: { fontSize: 36, fontWeight: 'bold', color: theme.colors.primary, marginTop: 8 }
 });

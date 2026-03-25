@@ -1,9 +1,11 @@
-import { View, Text, StyleSheet, FlatList, Pressable, Button, Alert, TextInput } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Pressable, Alert, TextInput } from 'react-native';
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useState, useCallback, useEffect } from 'react';
 import { SessionRepository, WorkoutSession, SessionExercise, WorkoutSet } from '../../src/repositories/session-repository';
 import { ExercisePickerModal } from '../../src/components/ExercisePickerModal';
+import { Ionicons } from '@expo/vector-icons';
+import { theme } from '../../src/themes/colors';
 
 function ExerciseSetsCard({ sessionExercise, isCompleted }: { sessionExercise: SessionExercise, isCompleted: boolean }) {
   const db = useSQLiteContext();
@@ -42,9 +44,9 @@ function ExerciseSetsCard({ sessionExercise, isCompleted }: { sessionExercise: S
       {sets.length > 0 && (
         <View style={styles.setsContainer}>
           <View style={styles.setRowHeader}>
-            <Text style={styles.setCol}>Set</Text>
-            <Text style={styles.setCol}>kg</Text>
-            <Text style={styles.setCol}>Reps</Text>
+            <Text style={styles.setColHeader}>Set</Text>
+            <Text style={styles.setColHeader}>kg</Text>
+            <Text style={styles.setColHeader}>Reps</Text>
             <Text style={styles.setColTick}>✓</Text>
           </View>
           {sets.map(s => (
@@ -52,7 +54,7 @@ function ExerciseSetsCard({ sessionExercise, isCompleted }: { sessionExercise: S
               <Text style={styles.setCol}>{s.set_number}</Text>
               <Text style={styles.setCol}>{s.weight}</Text>
               <Text style={styles.setCol}>{s.reps}</Text>
-              <Text style={styles.setColTick}>✓</Text>
+              <Ionicons name="checkmark-circle" size={24} color={theme.colors.primary} style={styles.setColTick} />
             </View>
           ))}
         </View>
@@ -60,10 +62,10 @@ function ExerciseSetsCard({ sessionExercise, isCompleted }: { sessionExercise: S
 
       {!isCompleted && (
         <View style={styles.inputRow}>
-          <TextInput style={styles.input} placeholder="kg" keyboardType="numeric" value={weight} onChangeText={setWeight} />
-          <TextInput style={styles.input} placeholder="reps" keyboardType="numeric" value={reps} onChangeText={setReps} />
+          <TextInput style={styles.input} placeholder="kg" placeholderTextColor={theme.colors.border} keyboardType="numeric" value={weight} onChangeText={setWeight} />
+          <TextInput style={styles.input} placeholder="reps" placeholderTextColor={theme.colors.border} keyboardType="numeric" value={reps} onChangeText={setReps} />
           <Pressable style={styles.addSetBtn} onPress={handleAddSet}>
-            <Text style={styles.addSetBtnText}>+</Text>
+            <Ionicons name="add" size={24} color="white" />
           </Pressable>
         </View>
       )}
@@ -116,7 +118,7 @@ export default function ActiveSessionScreen() {
     }
   };
 
-  if (!session) return <View style={styles.empty}><Text>Cargando sesión...</Text></View>;
+  if (!session) return <View style={styles.empty}><Text style={styles.emptyText}>Cargando sesión...</Text></View>;
 
   const isCompleted = session.status === 'completed';
 
@@ -124,27 +126,33 @@ export default function ActiveSessionScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>{session.name}</Text>
-        <Text style={styles.status}>{isCompleted ? 'Completado' : 'En Curso'}</Text>
+        <View style={[styles.statusBadge, isCompleted ? styles.statusBadgeCompleted : styles.statusBadgeActive]}>
+          <Text style={[styles.statusText, isCompleted ? styles.statusTextCompleted : styles.statusTextActive]}>
+            {isCompleted ? 'Completado' : 'En Curso'}
+          </Text>
+        </View>
       </View>
 
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Ejercicios ({exercises.length})</Text>
         {!isCompleted && (
           <Pressable style={styles.addButton} onPress={() => setPickerVisible(true)}>
-            <Text style={styles.addButtonText}>+ Añadir</Text>
+            <Ionicons name="add" size={16} color="white" />
+            <Text style={styles.addButtonText}> Añadir</Text>
           </Pressable>
         )}
       </View>
 
       {exercises.length === 0 ? (
         <View style={styles.emptyList}>
-          <Text style={styles.emptyText}>Inicia agregando tu primer ejercicio con el botón "Añadir".</Text>
+          <Ionicons name="barbell-outline" size={48} color={theme.colors.border} />
+          <Text style={[styles.emptyText, { marginTop: 16 }]}>Inicia agregando tu primer ejercicio con el botón "Añadir".</Text>
         </View>
       ) : (
         <FlatList
           data={exercises}
           keyExtractor={item => item.id}
-          contentContainerStyle={{ paddingBottom: 80 }}
+          contentContainerStyle={{ paddingBottom: 100 }}
           renderItem={({ item }) => (
              <ExerciseSetsCard sessionExercise={item} isCompleted={isCompleted} />
           )}
@@ -153,7 +161,9 @@ export default function ActiveSessionScreen() {
 
       {!isCompleted && (
         <View style={styles.footer}>
-          <Button title="Terminar Entrenamiento" onPress={finishSession} color="#ef4444" />
+          <Pressable style={styles.finishSessionBtn} onPress={finishSession}>
+            <Text style={styles.finishSessionBtnText}>Terminar Entrenamiento</Text>
+          </Pressable>
         </View>
       )}
 
@@ -163,31 +173,40 @@ export default function ActiveSessionScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f5f5' },
-  header: { padding: 16, backgroundColor: 'white', borderBottomWidth: 1, borderBottomColor: '#eee' },
-  title: { fontSize: 24, fontWeight: 'bold' },
-  status: { fontSize: 14, color: '#666', marginTop: 4 },
-  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, marginTop: 8 },
-  sectionTitle: { fontSize: 18, fontWeight: 'bold' },
-  addButton: { paddingHorizontal: 16, paddingVertical: 8, backgroundColor: '#007AFF', borderRadius: 8 },
+  container: { flex: 1, backgroundColor: theme.colors.background },
+  header: { padding: 20, backgroundColor: theme.colors.surface, borderBottomWidth: 1, borderBottomColor: theme.colors.border },
+  title: { fontSize: 24, fontWeight: 'bold', color: theme.colors.text },
+  statusBadge: { alignSelf: 'flex-start', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 16, marginTop: 8 },
+  statusBadgeCompleted: { backgroundColor: theme.colors.badgeBg },
+  statusBadgeActive: { backgroundColor: '#fef08a' },
+  statusText: { fontSize: 12, fontWeight: 'bold' },
+  statusTextCompleted: { color: theme.colors.badgeText },
+  statusTextActive: { color: '#854d0e' },
+  
+  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20 },
+  sectionTitle: { fontSize: 18, fontWeight: 'bold', color: theme.colors.text },
+  addButton: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 8, backgroundColor: theme.colors.primary, borderRadius: theme.borderRadius.md },
   addButtonText: { color: 'white', fontWeight: 'bold' },
   
-  exerciseCard: { backgroundColor: 'white', marginHorizontal: 16, marginBottom: 12, borderRadius: 8, elevation: 1, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 2, shadowOffset: { width: 0, height: 1 } },
-  exName: { fontSize: 16, fontWeight: 'bold', padding: 16, borderBottomWidth: 1, borderBottomColor: '#f0f0f0' },
+  exerciseCard: { backgroundColor: theme.colors.card, marginHorizontal: 16, marginBottom: 16, borderRadius: theme.borderRadius.md, elevation: 3, overflow: 'hidden' },
+  exName: { fontSize: 18, fontWeight: 'bold', padding: 16, color: theme.colors.text, backgroundColor: theme.colors.surface, borderBottomWidth: 1, borderBottomColor: theme.colors.border },
   
-  setsContainer: { paddingVertical: 8 },
-  setRowHeader: { flexDirection: 'row', paddingHorizontal: 16, paddingVertical: 4 },
-  setRow: { flexDirection: 'row', paddingHorizontal: 16, paddingVertical: 8, backgroundColor: '#fafafa', borderBottomWidth: 1, borderBottomColor: '#f0f0f0' },
-  setCol: { flex: 1, textAlign: 'center', fontSize: 14, color: '#333' },
-  setColTick: { width: 40, textAlign: 'center', color: '#10b981', fontWeight: 'bold' },
+  setsContainer: { paddingBottom: 8 },
+  setRowHeader: { flexDirection: 'row', paddingHorizontal: 16, paddingVertical: 8 },
+  setColHeader: { flex: 1, textAlign: 'center', fontSize: 12, fontWeight: 'bold', color: theme.colors.textSecondary, textTransform: 'uppercase' },
+  setRow: { flexDirection: 'row', paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: theme.colors.border },
+  setCol: { flex: 1, textAlign: 'center', fontSize: 16, color: theme.colors.text, fontWeight: '500' },
+  setColTick: { width: 40, textAlign: 'center' },
   
-  inputRow: { flexDirection: 'row', padding: 16, alignItems: 'center', backgroundColor: '#fff' },
-  input: { flex: 1, backgroundColor: '#f5f5f5', borderRadius: 8, padding: 10, marginRight: 8, textAlign: 'center' },
-  addSetBtn: { backgroundColor: '#e0f2fe', width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center' },
-  addSetBtnText: { color: '#0284c7', fontSize: 24, fontWeight: 'bold', marginTop: -2 },
+  inputRow: { flexDirection: 'row', padding: 16, paddingTop: 8, alignItems: 'center' },
+  input: { flex: 1, backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border, borderRadius: theme.borderRadius.md, padding: 12, marginRight: 8, textAlign: 'center', color: theme.colors.text, fontSize: 16 },
+  addSetBtn: { backgroundColor: theme.colors.primary, width: 48, height: 48, borderRadius: 24, justifyContent: 'center', alignItems: 'center' },
   
-  empty: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  empty: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.background },
   emptyList: { padding: 32, alignItems: 'center' },
-  emptyText: { color: '#999', textAlign: 'center' },
-  footer: { padding: 16, backgroundColor: 'white', borderTopWidth: 1, borderTopColor: '#eee' }
+  emptyText: { color: theme.colors.textSecondary, textAlign: 'center', fontSize: 16 },
+  
+  footer: { position: 'absolute', bottom: 0, left: 0, right: 0, padding: 16, backgroundColor: theme.colors.surface, borderTopWidth: 1, borderTopColor: theme.colors.border },
+  finishSessionBtn: { backgroundColor: theme.colors.danger, padding: 16, borderRadius: theme.borderRadius.md, alignItems: 'center' },
+  finishSessionBtnText: { color: 'white', fontSize: 16, fontWeight: 'bold' }
 });

@@ -3,6 +3,8 @@ import { Link, useFocusEffect } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useCallback, useState } from 'react';
 import { TemplateRepository, WorkoutTemplate } from '../../src/repositories/template-repository';
+import { theme } from '../../src/themes/colors';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function TemplatesListScreen() {
   const db = useSQLiteContext();
@@ -19,12 +21,13 @@ export default function TemplatesListScreen() {
     <View style={styles.container}>
       <Link href="/templates/new" asChild>
         <Pressable style={styles.fab}>
-          <Text style={styles.fabText}>+</Text>
+          <Ionicons name="add" size={32} color="white" />
         </Pressable>
       </Link>
       
       {templates.length === 0 ? (
         <View style={styles.empty}>
+          <Ionicons name="list" size={64} color={theme.colors.border} />
           <Text style={styles.emptyText}>No tienes rutinas creadas.</Text>
         </View>
       ) : (
@@ -35,7 +38,10 @@ export default function TemplatesListScreen() {
           renderItem={({ item }) => (
             <Link href={`/templates/${item.id}`} asChild>
               <Pressable style={styles.card}>
-                <Text style={styles.name}>{item.name}</Text>
+                <View style={styles.cardHeader}>
+                  <Text style={styles.name}>{item.name}</Text>
+                  <Ionicons name="chevron-forward" size={20} color={theme.colors.textSecondary} />
+                </View>
                 {item.description && <Text style={styles.desc}>{item.description}</Text>}
               </Pressable>
             </Link>
@@ -47,12 +53,12 @@ export default function TemplatesListScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: '#f5f5f5' },
-  card: { backgroundColor: 'white', padding: 16, borderRadius: 8, marginBottom: 12, elevation: 2, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 4, shadowOffset: { width: 0, height: 2 } },
-  name: { fontSize: 18, fontWeight: 'bold' },
-  desc: { fontSize: 14, color: '#666', marginTop: 8 },
+  container: { flex: 1, padding: 16, backgroundColor: theme.colors.background },
+  card: { backgroundColor: theme.colors.card, padding: 20, borderRadius: theme.borderRadius.lg, marginBottom: 16, elevation: 2, shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 4, shadowOffset: { width: 0, height: 2 } },
+  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  name: { fontSize: 20, fontWeight: 'bold', color: theme.colors.text },
+  desc: { fontSize: 14, color: theme.colors.textSecondary, marginTop: 8 },
   empty: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  emptyText: { fontSize: 16, color: '#999' },
-  fab: { position: 'absolute', right: 20, bottom: 20, width: 56, height: 56, borderRadius: 28, backgroundColor: '#007AFF', justifyContent: 'center', alignItems: 'center', zIndex: 10, elevation: 4 },
-  fabText: { fontSize: 32, color: 'white', fontWeight: 'bold', marginTop: -2 }
+  emptyText: { fontSize: 16, color: theme.colors.textSecondary, marginTop: 16 },
+  fab: { position: 'absolute', right: 20, bottom: 20, width: 64, height: 64, borderRadius: 32, backgroundColor: '#6366f1', justifyContent: 'center', alignItems: 'center', zIndex: 10, elevation: 6, shadowColor: '#6366f1', shadowOpacity: 0.4, shadowRadius: 8, shadowOffset: { width: 0, height: 4 } }
 });
