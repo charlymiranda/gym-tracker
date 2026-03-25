@@ -3,6 +3,7 @@ import { SQLiteProvider } from 'expo-sqlite';
 import { runMigrations } from '../src/database/migrations';
 import { runInitialSeed } from '../src/database/seed';
 import { type SQLiteDatabase } from 'expo-sqlite';
+import { RestTimer } from '../src/components/RestTimer';
 
 async function initializeDatabase(db: SQLiteDatabase) {
   try {
@@ -40,6 +41,7 @@ export default function RootLayout() {
         <Stack.Screen name="backup/index" options={{ title: 'Copias de Seguridad' }} />
         <Stack.Screen name="settings/index" options={{ title: 'Ajustes' }} />
       </Stack>
+      <RestTimer />
     </SQLiteProvider>
   );
 }

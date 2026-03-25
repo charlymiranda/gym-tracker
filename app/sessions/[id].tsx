@@ -6,6 +6,7 @@ import { SessionRepository, WorkoutSession, SessionExercise, WorkoutSet } from '
 import { ExercisePickerModal } from '../../src/components/ExercisePickerModal';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../../src/themes/colors';
+import { useWorkoutStore } from '../../src/store/workout-store';
 
 function ExerciseSetsCard({ sessionExercise, isCompleted }: { sessionExercise: SessionExercise, isCompleted: boolean }) {
   const db = useSQLiteContext();
@@ -32,6 +33,9 @@ function ExerciseSetsCard({ sessionExercise, isCompleted }: { sessionExercise: S
       setReps('');
       setWeight('');
       loadSets();
+      
+      // Auto-start rest timer for 90 seconds (1:30)
+      useWorkoutStore.getState().startRestTimer(90);
     } catch (e) {
       console.error(e);
     }
