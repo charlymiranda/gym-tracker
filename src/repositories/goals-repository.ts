@@ -5,6 +5,8 @@ export interface Goal {
   id: string;
   goal_type: string;
   target_value: number;
+  status?: string;
+  created_at: string;
 }
 
 export class GoalsRepository {
@@ -21,5 +23,10 @@ export class GoalsRepository {
       'INSERT INTO goals (id, goal_type, target_value, status, created_at, updated_at) VALUES (?, ?, 0, "active", ?, ?)',
       [id, summary, now, now]
     );
+  }
+
+  async completeGoal(id: string): Promise<void> {
+    const now = new Date().toISOString();
+    await this.db.runAsync('UPDATE goals SET status = "completed", updated_at = ? WHERE id = ?', [now, id]);
   }
 }

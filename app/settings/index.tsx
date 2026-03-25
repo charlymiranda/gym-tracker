@@ -1,41 +1,55 @@
 import { View, Text, StyleSheet, Switch } from 'react-native';
-import { useState } from 'react';
+import { useSQLiteContext } from 'expo-sqlite';
+import { useState, useEffect } from 'react';
+import { PreferencesRepository } from '../../src/repositories/extra-repositories';
+import { theme } from '../../src/themes/colors';
 
 export default function SettingsScreen() {
-  const [isKg, setIsKg] = useState(true);
+  const db = useSQLiteContext();
+  const [useLbs, setUseLbs] = useState(false);
+
+  useEffect(() => {
+    const repo = new PreferencesRepository(db);
+    repo.getPreferences().then((prefs: any) => {
+      setUseLbs(prefs?.weight_unit === 'lbs');
+    }).catch(console.error);
+  }, [db]);
+
+  const toggleUnit = async (val: boolean) => {
+    setUseLbs(val);
+    try {
+      // TODO: implement setPreference in repo
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.headerTitle}>Ajustes</Text>
+      <Text style={styles.sectionTitle}>Preferencias de Visualización</Text>
       
-      <View style={styles.card}>
-        <View style={styles.row}>
-          <Text style={styles.label}>Unidad de Peso Base</Text>
-          <View style={styles.switchContainer}>
-            <Text style={styles.unitText}>lbs</Text>
-            <Switch value={isKg} onValueChange={setIsKg} />
-            <Text style={styles.unitText}>kg</Text>
-          </View>
+      <View style={styles.settingRow}>
+        <View>
+          <Text style={styles.settingLabel}>Unidad de Peso</Text>
+          <Text style={styles.settingDesc}>
+            {useLbs ? 'Usando Libras (lbs)' : 'Usando Kilogramos (kg)'}
+          </Text>
         </View>
-        <Text style={styles.hint}>Nota: La conversión de unidades se implementará en la v2.</Text>
-      </View>
-
-      <View style={styles.card}>
-        <Text style={styles.label}>Acerca de Gym Tracker</Text>
-        <Text style={styles.version}>Versión 1.0.0 (Offline-First MVP)</Text>
+        <Switch 
+          value={useLbs} 
+          onValueChange={toggleUnit} 
+          thumbColor={useLbs ? theme.colors.primary : '#f4f3f4'} 
+          trackColor={{ false: theme.colors.border, true: theme.colors.primaryDark }}
+        />
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: '#f5f5f5' },
-  headerTitle: { fontSize: 24, fontWeight: 'bold', marginBottom: 20 },
-  card: { backgroundColor: 'white', padding: 16, borderRadius: 8, marginBottom: 16, elevation: 1 },
-  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  label: { fontSize: 16, fontWeight: '500' },
-  switchContainer: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  unitText: { fontSize: 14, color: '#666' },
-  hint: { fontSize: 12, color: '#999', marginTop: 12, fontStyle: 'italic' },
-  version: { fontSize: 14, color: '#666', marginTop: 8 }
+  container: { flex: 1, padding: 20, backgroundColor: theme.colors.background },
+  sectionTitle: { fontSize: 14, fontWeight: 'bold', color: theme.colors.textSecondary, marginBottom: 16, textTransform: 'uppercase' },
+  settingRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: theme.colors.card, padding: 16, borderRadius: theme.borderRadius.md, elevation: 1 },
+  settingLabel: { fontSize: 16, fontWeight: 'bold', color: theme.colors.text },
+  settingDesc: { fontSize: 14, color: theme.colors.textSecondary, marginTop: 4 }
 });

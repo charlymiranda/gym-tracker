@@ -1,69 +1,55 @@
-import { View, Text, StyleSheet, Button, Alert } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Alert } from 'react-native';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
+import { theme } from '../../src/themes/colors';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function BackupScreen() {
-  
-  const exportDatabase = async () => {
+  const exportDb = async () => {
     try {
-      // The sqlite database is stored in the documents directory under 'SQLite'
-      const dbDir = ((FileSystem as any).documentDirectory || '') + 'SQLite/';
-      const dbPath = dbDir + 'gymtracker.db';
-      
+      // @ts-ignore
+      if (!FileSystem.documentDirectory) throw new Error("FileSystem root not found");
+      // @ts-ignore
+      const dbPath = FileSystem.documentDirectory + "SQLite/gymtracker.db";
+      // @ts-ignore
       const fileInfo = await FileSystem.getInfoAsync(dbPath);
-      if (!fileInfo.exists) {
-        Alert.alert('Error', 'No se encontró la base de datos local.');
-        return;
-      }
-
-      const isSharingAvailable = await Sharing.isAvailableAsync();
-      if (!isSharingAvailable) {
-        Alert.alert('Error', 'La función de compartir no está disponible en este dispositivo.');
-        return;
-      }
-
-      await Sharing.shareAsync(dbPath, {
-        mimeType: 'application/x-sqlite3',
-        dialogTitle: 'Exportar Base de Datos GymTracker',
-        UTI: 'public.database'
-      });
       
-    } catch (error) {
-      console.error(error);
-      Alert.alert('Error', 'Ocurrió un error al exportar.');
-    }
-  };
+      if (!fileInfo.exists) {
+        Alert.alert("Error", "No se encontró la base de datos.");
+        return;
+      }
 
-  const importDatabase = () => {
-    Alert.alert('Próximamente', 'La importación de bases de datos se habilitará en la versión final.');
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(dbPath, { mimeType: 'application/x-sqlite3', dialogTitle: 'Exportar Base de Datos' });
+      } else {
+        Alert.alert("Error", "Compartir no está disponible en este dispositivo.");
+      }
+    } catch (e) {
+      console.error(e);
+      Alert.alert("Error exportando", String(e));
+    }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.headerTitle}>Copias de Seguridad</Text>
+      <Text style={styles.title}>Copias de Seguridad</Text>
+      <Text style={styles.desc}>
+        Tus datos se guardan estrictamente de manera local en tu dispositivo (offline-first).
+        Puedes exportar la base de datos completa para crear una copia de seguridad o transferir tus datos.
+      </Text>
       
-      <View style={styles.card}>
-        <Text style={styles.description}>
-          Gym Tracker es una aplicación "Offline-First". TUS datos viven en TU teléfono. 
-          Genera copias de seguridad de tu base de datos y guárdalas en Google Drive o envíatelas por email para no perder nunca tu historial.
-        </Text>
-        
-        <View style={styles.buttonContainer}>
-          <Button title="Exportar Datos (.db)" onPress={exportDatabase} color="#10b981" />
-        </View>
-
-        <View style={styles.buttonContainer}>
-          <Button title="Importar Datos" onPress={importDatabase} color="#6366f1" />
-        </View>
-      </View>
+      <Pressable style={styles.exportBtn} onPress={exportDb}>
+        <Ionicons name="cloud-download-outline" size={24} color="white" />
+        <Text style={styles.exportBtnText}> Exportar Base de Datos</Text>
+      </Pressable>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: '#f5f5f5' },
-  headerTitle: { fontSize: 24, fontWeight: 'bold', marginBottom: 20 },
-  card: { backgroundColor: 'white', padding: 20, borderRadius: 12, elevation: 1 },
-  description: { fontSize: 16, color: '#444', lineHeight: 24, marginBottom: 24 },
-  buttonContainer: { marginBottom: 16 }
+  container: { flex: 1, padding: 20, backgroundColor: theme.colors.background },
+  title: { fontSize: 24, fontWeight: 'bold', color: theme.colors.text, marginBottom: 16 },
+  desc: { fontSize: 16, color: theme.colors.textSecondary, marginBottom: 32, lineHeight: 24 },
+  exportBtn: { flexDirection: 'row', backgroundColor: theme.colors.primary, padding: 16, borderRadius: theme.borderRadius.md, alignItems: 'center', justifyContent: 'center', elevation: 2 },
+  exportBtnText: { color: 'white', fontWeight: 'bold', fontSize: 16 }
 });
