@@ -3,6 +3,7 @@ import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useState, useCallback, useEffect } from 'react';
 import { SessionRepository, WorkoutSession, SessionExercise, WorkoutSet } from '../../src/repositories/session-repository';
+import { ProgressRepository } from '../../src/repositories/stats-repository';
 import { ExercisePickerModal } from '../../src/components/ExercisePickerModal';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../../src/themes/colors';
@@ -13,13 +14,17 @@ function ExerciseSetsCard({ sessionExercise, isCompleted }: { sessionExercise: S
   const [sets, setSets] = useState<WorkoutSet[]>([]);
   const [reps, setReps] = useState('');
   const [weight, setWeight] = useState('');
+  const [pr, setPr] = useState<number>(0);
 
   const loadSets = useCallback(() => {
     const repo = new SessionRepository(db);
     repo.getSetsForExercise(sessionExercise.id).then(setSets).catch(console.error);
   }, [sessionExercise.id, db]);
 
-  useEffect(() => { loadSets(); }, [loadSets]);
+  useEffect(() => { 
+    loadSets(); 
+    new ProgressRepository(db).getMaxWeightForExercise(sessionExercise.exercise_id).then(setPr);
+  }, [loadSets, sessionExercise.exercise_id, db]);
 
   const handleAddSet = async () => {
     const r = parseInt(reps) || 0;
@@ -30,8 +35,7 @@ function ExerciseSetsCard({ sessionExercise, isCompleted }: { sessionExercise: S
       const repo = new SessionRepository(db);
       const nextSetNum = sets.length + 1;
       await repo.addSet(sessionExercise.id, nextSetNum, r, w);
-      setReps('');
-      setWeight('');
+      // We purposefully DO NOT clear inputs so it's easier to log the next set identically
       loadSets();
       
       // Auto-start rest timer for 90 seconds (1:30)
@@ -41,9 +45,21 @@ function ExerciseSetsCard({ sessionExercise, isCompleted }: { sessionExercise: S
     }
   };
 
+  const adjustWeight = (amount: number) => {
+    const w = parseFloat(weight.replace(',', '.')) || 0;
+    setWeight(Math.max(0, w + amount).toString());
+  };
+  const adjustReps = (amount: number) => {
+    const r = parseInt(reps) || 0;
+    setReps(Math.max(0, r + amount).toString());
+  };
+
   return (
     <View style={styles.exerciseCard}>
-      <Text style={styles.exName}>{sessionExercise.name}</Text>
+      <View style={styles.exHeader}>
+        <Text style={styles.exName}>{sessionExercise.name}</Text>
+        {pr > 0 && <Text style={styles.prText}>🏆 PR: {pr} kg</Text>}
+      </View>
       
       {sets.length > 0 && (
         <View style={styles.setsContainer}>
@@ -65,11 +81,31 @@ function ExerciseSetsCard({ sessionExercise, isCompleted }: { sessionExercise: S
       )}
 
       {!isCompleted && (
-        <View style={styles.inputRow}>
-          <TextInput style={styles.input} placeholder="kg" placeholderTextColor={theme.colors.border} keyboardType="numeric" value={weight} onChangeText={setWeight} />
-          <TextInput style={styles.input} placeholder="reps" placeholderTextColor={theme.colors.border} keyboardType="numeric" value={reps} onChangeText={setReps} />
+        <View style={styles.inputContainer}>
+          <View style={styles.quickInputWrapper}>
+            <View style={styles.quickInputControls}>
+              <Pressable style={styles.adjustBtn} onPress={() => adjustWeight(-2.5)}><Text style={styles.adjustBtnText}>-</Text></Pressable>
+              <View style={styles.inputBox}>
+                <TextInput style={styles.quickInput} keyboardType="numeric" value={weight} onChangeText={setWeight} placeholder="0" placeholderTextColor={theme.colors.border} />
+                <Text style={styles.inputHelp}>kg</Text>
+              </View>
+              <Pressable style={styles.adjustBtn} onPress={() => adjustWeight(2.5)}><Text style={styles.adjustBtnText}>+</Text></Pressable>
+            </View>
+          </View>
+          
+          <View style={styles.quickInputWrapper}>
+            <View style={styles.quickInputControls}>
+              <Pressable style={styles.adjustBtn} onPress={() => adjustReps(-1)}><Text style={styles.adjustBtnText}>-</Text></Pressable>
+              <View style={styles.inputBox}>
+                <TextInput style={styles.quickInput} keyboardType="numeric" value={reps} onChangeText={setReps} placeholder="0" placeholderTextColor={theme.colors.border} />
+                <Text style={styles.inputHelp}>reps</Text>
+              </View>
+              <Pressable style={styles.adjustBtn} onPress={() => adjustReps(1)}><Text style={styles.adjustBtnText}>+</Text></Pressable>
+            </View>
+          </View>
+
           <Pressable style={styles.addSetBtn} onPress={handleAddSet}>
-            <Ionicons name="add" size={24} color="white" />
+            <Ionicons name="checkmark" size={28} color="white" />
           </Pressable>
         </View>
       )}
@@ -193,7 +229,9 @@ const styles = StyleSheet.create({
   addButtonText: { color: 'white', fontWeight: 'bold' },
   
   exerciseCard: { backgroundColor: theme.colors.card, marginHorizontal: 16, marginBottom: 16, borderRadius: theme.borderRadius.md, elevation: 3, overflow: 'hidden' },
-  exName: { fontSize: 18, fontWeight: 'bold', padding: 16, color: theme.colors.text, backgroundColor: theme.colors.surface, borderBottomWidth: 1, borderBottomColor: theme.colors.border },
+  exHeader: { padding: 16, backgroundColor: theme.colors.surface, borderBottomWidth: 1, borderBottomColor: theme.colors.border, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  exName: { fontSize: 16, fontWeight: 'bold', color: theme.colors.text, flex: 1 },
+  prText: { fontSize: 12, fontWeight: 'bold', color: '#f59e0b', backgroundColor: '#fef3c720', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12 },
   
   setsContainer: { paddingBottom: 8 },
   setRowHeader: { flexDirection: 'row', paddingHorizontal: 16, paddingVertical: 8 },
@@ -202,9 +240,16 @@ const styles = StyleSheet.create({
   setCol: { flex: 1, textAlign: 'center', fontSize: 16, color: theme.colors.text, fontWeight: '500' },
   setColTick: { width: 40, textAlign: 'center' },
   
-  inputRow: { flexDirection: 'row', padding: 16, paddingTop: 8, alignItems: 'center' },
-  input: { flex: 1, backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border, borderRadius: theme.borderRadius.md, padding: 12, marginRight: 8, textAlign: 'center', color: theme.colors.text, fontSize: 16 },
-  addSetBtn: { backgroundColor: theme.colors.primary, width: 48, height: 48, borderRadius: 24, justifyContent: 'center', alignItems: 'center' },
+  inputContainer: { flexDirection: 'row', padding: 12, backgroundColor: theme.colors.background, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' },
+  quickInputWrapper: { flex: 1, marginRight: 8 },
+  quickInputControls: { flexDirection: 'row', alignItems: 'center', backgroundColor: theme.colors.surface, borderRadius: theme.borderRadius.md, overflow: 'hidden', borderWidth: 1, borderColor: theme.colors.border },
+  adjustBtn: { padding: 10, backgroundColor: theme.colors.border },
+  adjustBtnText: { color: theme.colors.text, fontSize: 18, fontWeight: 'bold', lineHeight: 18 },
+  inputBox: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  quickInput: { color: theme.colors.text, fontSize: 16, fontWeight: 'bold', textAlign: 'center', padding: 0 },
+  inputHelp: { fontSize: 10, color: theme.colors.textSecondary, marginTop: -4, marginBottom: 4 },
+  
+  addSetBtn: { backgroundColor: theme.colors.primary, width: 44, height: 44, borderRadius: theme.borderRadius.md, justifyContent: 'center', alignItems: 'center' },
   
   empty: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.background },
   emptyList: { padding: 32, alignItems: 'center' },
