@@ -20,8 +20,8 @@ export default function HistoryScreen() {
     try {
       const repo = new SessionRepository(db);
       const dateStr = new Date().toLocaleDateString();
-      const id = await repo.createSession(\`Entrenamiento de \${dateStr}\`);
-      router.push(\`/sessions/\${id}\`);
+      const id = await repo.createSession(`Entrenamiento de ${dateStr}`);
+      router.push(`/sessions/${id}`);
     } catch (e) {
       console.error(e);
     }
@@ -43,7 +43,7 @@ export default function HistoryScreen() {
           keyExtractor={item => item.id}
           contentContainerStyle={{ paddingBottom: 80 }}
           renderItem={({ item }) => (
-            <Link href={\`/sessions/\${item.id}\`} asChild>
+            <Link href={`/sessions/${item.id}`} asChild>
               <Pressable style={styles.card}>
                 <View style={styles.header}>
                   <Text style={styles.name}>{item.name}</Text>
@@ -53,7 +53,7 @@ export default function HistoryScreen() {
                 </View>
                 <Text style={styles.meta}>
                   {new Date(item.started_at).toLocaleString()}
-                  {item.duration_seconds ? \` • \${Math.floor(item.duration_seconds / 60)} min\` : ''}
+                  {item.duration_seconds ? ` • ${Math.floor(item.duration_seconds / 60)} min` : ''}
                 </Text>
               </Pressable>
             </Link>

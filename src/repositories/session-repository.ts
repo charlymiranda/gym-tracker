@@ -52,11 +52,11 @@ export class SessionRepository {
 
   async getSessionExercises(sessionId: string): Promise<SessionExercise[]> {
     return await this.db.getAllAsync<SessionExercise>(
-      \`SELECT wse.id, wse.session_id, wse.exercise_id, wse.sort_order, e.name
+      `SELECT wse.id, wse.session_id, wse.exercise_id, wse.sort_order, e.name
        FROM workout_session_exercises wse
        JOIN exercises e ON wse.exercise_id = e.id
        WHERE wse.session_id = ?
-       ORDER BY wse.sort_order ASC\`,
+       ORDER BY wse.sort_order ASC`,
       [sessionId]
     );
   }
@@ -81,8 +81,8 @@ export class SessionRepository {
     const id = Crypto.randomUUID();
     const now = new Date().toISOString();
     await this.db.runAsync(
-      \`INSERT INTO workout_sets (id, session_exercise_id, set_number, reps, weight, weight_unit, is_warmup, is_completed, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, 'kg', 0, 1, ?, ?)\`,
+      `INSERT INTO workout_sets (id, session_exercise_id, set_number, reps, weight, weight_unit, is_warmup, is_completed, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, 'kg', 0, 1, ?, ?)`,
       [id, sessionExerciseId, setNumber, reps, weight, now, now]
     );
   }

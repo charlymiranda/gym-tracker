@@ -11,7 +11,7 @@ export default function NewTemplateScreen() {
   const router = useRouter();
   
   const { control, handleSubmit, formState: { errors } } = useForm<TemplateFormData>({
-    resolver: zodResolver(templateSchema),
+    resolver: zodResolver(templateSchema) as any,
     defaultValues: { name: '', description: '' }
   });
 
@@ -47,7 +47,7 @@ export default function NewTemplateScreen() {
       />
 
       <View style={styles.buttonContainer}>
-        <Button title="Guardar Rutina" onPress={handleSubmit(onSubmit)} />
+        <Button title="Guardar Rutina" onPress={() => handleSubmit(onSubmit)()} />
       </View>
     </ScrollView>
   );

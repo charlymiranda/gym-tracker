@@ -27,10 +27,10 @@ export class ProgressRepository {
   
   async getMaxWeightForExercise(exerciseId: string): Promise<number> {
     const res = await this.db.getFirstAsync<{ max_weight: number }>(
-      \`SELECT MAX(s.weight) as max_weight 
+      `SELECT MAX(s.weight) as max_weight 
        FROM workout_sets s 
        JOIN workout_session_exercises wse ON s.session_exercise_id = wse.id 
-       WHERE wse.exercise_id = ? AND s.is_completed = 1\`, 
+       WHERE wse.exercise_id = ? AND s.is_completed = 1`,  
       [exerciseId]
     );
     return res?.max_weight || 0;

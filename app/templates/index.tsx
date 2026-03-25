@@ -33,7 +33,7 @@ export default function TemplatesListScreen() {
           keyExtractor={item => item.id}
           contentContainerStyle={{ paddingBottom: 80 }}
           renderItem={({ item }) => (
-            <Link href={\`/templates/\${item.id}\`} asChild>
+            <Link href={`/templates/${item.id}`} asChild>
               <Pressable style={styles.card}>
                 <Text style={styles.name}>{item.name}</Text>
                 {item.description && <Text style={styles.desc}>{item.description}</Text>}

@@ -11,7 +11,7 @@ export default function NewExerciseScreen() {
   const router = useRouter();
   
   const { control, handleSubmit, formState: { errors } } = useForm<ExerciseFormData>({
-    resolver: zodResolver(exerciseSchema),
+    resolver: zodResolver(exerciseSchema) as any,
     defaultValues: { is_unilateral: false, primary_muscle_group: '', equipment_type: '', name: '', notes: '' }
   });
 
@@ -78,7 +78,7 @@ export default function NewExerciseScreen() {
       />
 
       <View style={styles.buttonContainer}>
-        <Button title="Guardar Ejercicio" onPress={handleSubmit(onSubmit)} />
+        <Button title="Guardar Ejercicio" onPress={() => handleSubmit(onSubmit)()} />
       </View>
     </ScrollView>
   );

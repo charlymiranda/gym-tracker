@@ -46,7 +46,7 @@ export default function ExerciseDetailScreen() {
 
       <View style={styles.recordCard}>
         <Text style={styles.recordTitle}>Récord Personal (Max Peso)</Text>
-        <Text style={styles.recordValue}>{maxWeight > 0 ? \`\${maxWeight} kg\` : 'Sin registros'}</Text>
+        <Text style={styles.recordValue}>{maxWeight > 0 ? `${maxWeight} kg` : 'Sin registros'}</Text>
       </View>
     </View>
   );

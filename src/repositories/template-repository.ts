@@ -40,11 +40,11 @@ export class TemplateRepository {
 
   async getTemplateExercises(templateId: string): Promise<TemplateExercise[]> {
     return await this.db.getAllAsync<TemplateExercise>(
-      \`SELECT wte.id, wte.template_id, wte.exercise_id, wte.sort_order, e.name, e.primary_muscle_group
+      `SELECT wte.id, wte.template_id, wte.exercise_id, wte.sort_order, e.name, e.primary_muscle_group
        FROM workout_template_exercises wte
        JOIN exercises e ON wte.exercise_id = e.id
        WHERE wte.template_id = ?
-       ORDER BY wte.sort_order ASC\`,
+       ORDER BY wte.sort_order ASC`,
       [templateId]
     );
   }
@@ -52,8 +52,8 @@ export class TemplateRepository {
   async addExerciseToTemplate(templateId: string, exerciseId: string, sortOrder: number): Promise<void> {
     const id = Crypto.randomUUID();
     await this.db.runAsync(
-      \`INSERT INTO workout_template_exercises (id, template_id, exercise_id, sort_order)
-       VALUES (?, ?, ?, ?)\`,
+      `INSERT INTO workout_template_exercises (id, template_id, exercise_id, sort_order)
+       VALUES (?, ?, ?, ?)`,
       [id, templateId, exerciseId, sortOrder]
     );
   }

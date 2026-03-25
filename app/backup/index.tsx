@@ -7,7 +7,7 @@ export default function BackupScreen() {
   const exportDatabase = async () => {
     try {
       // The sqlite database is stored in the documents directory under 'SQLite'
-      const dbDir = FileSystem.documentDirectory + 'SQLite/';
+      const dbDir = ((FileSystem as any).documentDirectory || '') + 'SQLite/';
       const dbPath = dbDir + 'gymtracker.db';
       
       const fileInfo = await FileSystem.getInfoAsync(dbPath);
