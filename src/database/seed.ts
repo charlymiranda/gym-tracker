@@ -76,7 +76,44 @@ export async function runInitialSeed(db: SQLiteDatabase) {
         $is_injury_prevention: isInjuryPrevention()
       });
     }
-    
+
+    // --- CUSTOM RUNNING DRILLS ---
+    const runningDrills = [
+      { name: 'A-Skips', type: 'plyometrics', focus: 'calves', notes: 'Técnica de carrera: rodilla alta y apoyo reactivo.' },
+      { name: 'B-Skips', type: 'plyometrics', focus: 'hamstrings', notes: 'Extensión de pierna y zarpazo simulando la zancada.' },
+      { name: 'High Knees (Rodillas al Pecho)', type: 'cardio', focus: 'quadriceps', notes: 'Frecuencia alta y contacto mínimo con el suelo.' },
+      { name: 'Butt Kicks (Talones a Glúteos)', type: 'cardio', focus: 'hamstrings', notes: 'Activación rápida de isquiotibiales.' },
+      { name: 'Pogo Jumps', type: 'plyometrics', focus: 'calves', notes: 'Saltos reactivos usando solo los tobillos, rodillas bloqueadas.' },
+      { name: 'Single-Leg Bounds', type: 'plyometrics', focus: 'glutes', notes: 'Saltos amplios a una pierna para ganar amplitud de zancada.' },
+      { name: 'Wall Drills (Postura de Aceleración)', type: 'strength', focus: 'core', notes: 'Empujando la pared en 45°, simulando el empuje inicial.' },
+      { name: 'Carioca', type: 'cardio', focus: 'adductors', notes: 'Desplazamiento lateral cruzando pies para movilidad de cadera.' },
+      { name: 'Strides (Progresiones)', type: 'cardio', focus: 'quadriceps', notes: 'Aceleraciones de 80m al 90% de velocidad máxima.' },
+      { name: 'Tibialis Wall Raises', type: 'strength', focus: 'calves', notes: 'Previene periostitis tibial (Shin splints).' }
+    ];
+
+    for (const drill of runningDrills) {
+      await statement.executeAsync({
+        $id: String(Math.random()),
+        $type: 'system',
+        $name: drill.name,
+        $primary_muscle_group: drill.focus,
+        $secondary_muscle_groups: null,
+        $equipment_type: 'body only',
+        $movement_pattern: 'compound',
+        $exercise_type: drill.type,
+        $is_unilateral: drill.name.includes('Single') ? 1 : 0,
+        $difficulty: 'intermediate',
+        $instructions: drill.notes,
+        $tags: 'running-drill',
+        $created_at: now,
+        $updated_at: now,
+        $running_recommended: 1,
+        $sports_tags: 'running, track',
+        $is_single_leg_focus: drill.name.includes('Single') ? 1 : 0,
+        $is_injury_prevention: drill.name.includes('Tibialis') ? 1 : 0
+      });
+    }
+
     await db.execAsync('COMMIT;');
   } catch (e) {
     await db.execAsync('ROLLBACK;');
