@@ -34,6 +34,34 @@ export async function runInitialSeed(db: SQLiteDatabase) {
     // The dataset is huge, so we wrap it in a transaction for speed
     await db.execAsync('BEGIN TRANSACTION;');
     
+    const translateMuscle = (m: string) => {
+      const map: Record<string, string> = { 'abdominals': 'Abdominales', 'abductors': 'Abductores', 'adductors': 'Aductores', 'biceps': 'Bíceps', 'calves': 'Pantorrillas', 'chest': 'Pecho', 'forearms': 'Antebrazos', 'glutes': 'Glúteos', 'hamstrings': 'Isquiotibiales', 'lats': 'Dorsales', 'lower back': 'Espalda Baja', 'middle back': 'Espalda Media', 'neck': 'Cuello', 'quadriceps': 'Cuádriceps', 'shoulders': 'Hombros', 'traps': 'Trapecios', 'triceps': 'Tríceps' };
+      return map[m?.toLowerCase()] || m || 'Otro';
+    };
+
+    const translateEq = (eq: string) => {
+      const map: Record<string, string> = { 'body only': 'Peso Corporal', 'machine': 'Máquina', 'other': 'Otro', 'foam roll': 'Foam Roller', 'kettlebells': 'Pesas Rusas', 'dumbbell': 'Mancuernas', 'cable': 'Polea', 'barbell': 'Barra', 'bands': 'Bandas', 'medicine ball': 'Balón Medicinal', 'exercise ball': 'Pelota de Ejercicio', 'e-z curl bar': 'Barra EZ' };
+      return map[eq?.toLowerCase()] || eq || 'none';
+    };
+
+    const translateName = (name: string) => {
+      let t = name;
+      const dict = {
+        'Barbell': 'Barra', 'Dumbbell': 'Mancuerna', 'Kettlebell': 'Pesa Rusa', 'Cable': 'Polea', 'Band': 'Banda',
+        'Machine': 'Máquina', 'Bench Press': 'Press de Banca', 'Incline': 'Inclinado', 'Decline': 'Declinado',
+        'Seated': 'Sentado', 'Standing': 'de Pie', 'Lying': 'Tumbado', 'Squat': 'Sentadilla', 'Deadlift': 'Peso Muerto',
+        'Lunge': 'Estocada', 'Row': 'Remo', 'Pull-Up': 'Dominada', 'Chin-Up': 'Dominada Supina', 'Push-Up': 'Flexión',
+        'Extension': 'Extensión', 'Curl': 'Curl', 'Raise': 'Elevación', 'Fly': 'Apertura', 'Press': 'Press',
+        'Crunch': 'Encogimiento', 'Alternate': 'Alterno', 'Single Leg': 'a Una Pierna', 'One Arm': 'a Un Brazo',
+        'Front': 'Frontal', 'Reverse': 'Inverso', 'Wide Grip': 'Agarre Abierto', 'Close Grip': 'Agarre Cerrado',
+        'Overhead': 'sobre la Cabeza', 'Lateral': 'Lateral', 'Jump': 'Salto'
+      };
+      for (const [eng, spa] of Object.entries(dict)) {
+        t = t.replace(new RegExp(`\\b${eng}\\b`, 'gi'), spa);
+      }
+      return t;
+    };
+
     for (const ex of yuhonasData as any[]) {
       const isRunner = () => {
         const n = ex.name.toLowerCase();
@@ -58,10 +86,10 @@ export async function runInitialSeed(db: SQLiteDatabase) {
       await statement.executeAsync({
         $id: ex.id || String(Math.random()),
         $type: 'system',
-        $name: ex.name,
-        $primary_muscle_group: ex.primaryMuscles?.[0] || 'other',
-        $secondary_muscle_groups: ex.secondaryMuscles?.join(', ') || null,
-        $equipment_type: ex.equipment || 'none',
+        $name: translateName(ex.name),
+        $primary_muscle_group: translateMuscle(ex.primaryMuscles?.[0]),
+        $secondary_muscle_groups: ex.secondaryMuscles?.map(translateMuscle).join(', ') || null,
+        $equipment_type: translateEq(ex.equipment),
         $movement_pattern: ex.mechanic || null,
         $exercise_type: ex.category || null,
         $is_unilateral: isSingleLeg(),
