@@ -7,13 +7,14 @@ export default function Home() {
   const router = useRouter();
 
   const MENU_ITEMS = [
+    { id: 'running', title: 'Fuerza Running', icon: 'walk', color: '#f43f5e', href: '/running' },
     { id: 'exercises', title: 'Ejercicios', icon: 'barbell', color: '#10b981', href: '/exercises' },
     { id: 'templates', title: 'Mis Rutinas', icon: 'list', color: '#6366f1', href: '/templates' },
     { id: 'history', title: 'Historial', icon: 'time', color: '#f59e0b', href: '/history' },
     { id: 'stats', title: 'Estadísticas', icon: 'stats-chart', color: '#ec4899', href: '/stats' },
     { id: 'body', title: 'Peso Corporal', icon: 'body', color: '#0ea5e9', href: '/body' },
     { id: 'goals', title: 'Objetivos', icon: 'flag', color: '#eab308', href: '/goals' },
-    { id: 'backup', title: 'Copia de Seguridad', icon: 'cloud-download', color: '#8b5cf6', href: '/backup' },
+    { id: 'backup', title: 'Copias de Seg.', icon: 'cloud-download', color: '#8b5cf6', href: '/backup' },
     { id: 'settings', title: 'Ajustes', icon: 'settings', color: '#64748b', href: '/settings' },
   ];
 

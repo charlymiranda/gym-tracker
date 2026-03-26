@@ -40,6 +40,9 @@ export default function RootLayout() {
         <Stack.Screen name="goals/index" options={{ title: 'Objetivos' }} />
         <Stack.Screen name="backup/index" options={{ title: 'Copias de Seguridad' }} />
         <Stack.Screen name="settings/index" options={{ title: 'Ajustes' }} />
+        <Stack.Screen name="running/index" options={{ title: 'Running Strength' }} />
+        <Stack.Screen name="running/catalog" options={{ title: 'Catálogo Running' }} />
+        <Stack.Screen name="running/routines" options={{ title: 'Rutinas Recomendadas' }} />
       </Stack>
       <RestTimer />
     </SQLiteProvider>

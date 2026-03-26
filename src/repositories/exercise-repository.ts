@@ -7,8 +7,12 @@ export interface Exercise {
   name: string;
   primary_muscle_group: string;
   equipment_type: string;
-  is_unilateral: boolean;
+  is_unilateral: boolean | number;
   notes?: string;
+  running_recommended?: boolean | number;
+  sports_tags?: string | null;
+  is_single_leg_focus?: boolean | number;
+  is_injury_prevention?: boolean | number;
 }
 
 export class ExerciseRepository {

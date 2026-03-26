@@ -167,4 +167,15 @@ export async function runMigrations(db: SQLiteDatabase) {
     `);
     currentVersion = 1;
   }
+
+  if (currentVersion === 1) {
+    await db.execAsync(`
+      ALTER TABLE exercises ADD COLUMN running_recommended INTEGER DEFAULT 0;
+      ALTER TABLE exercises ADD COLUMN sports_tags TEXT NULL;
+      ALTER TABLE exercises ADD COLUMN is_single_leg_focus INTEGER DEFAULT 0;
+      ALTER TABLE exercises ADD COLUMN is_injury_prevention INTEGER DEFAULT 0;
+      PRAGMA user_version = 2;
+    `);
+    currentVersion = 2;
+  }
 }
