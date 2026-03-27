@@ -1,10 +1,11 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useState, useCallback } from 'react';
 import { ProgressRepository } from '../../src/repositories/stats-repository';
 import { ExerciseRepository, Exercise } from '../../src/repositories/exercise-repository';
 import { useTheme } from '../../src/themes/ThemeContext';
+import { AnimatedExercisePreview } from '../../src/components/AnimatedExercisePreview';
 
 export default function ExerciseDetailScreen() {
   const { theme } = useTheme();
@@ -34,8 +35,10 @@ export default function ExerciseDetailScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>{exercise.name}</Text>
+    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 40 }}>
+      {!!exercise.image_url && <AnimatedExercisePreview imageUrls={exercise.image_url} />}
+      
+      <Text style={[styles.title, !!exercise.image_url && { marginTop: 0 }]}>{exercise.name}</Text>
       
       <View style={styles.card}>
         <Text style={styles.metaLabel}>Músculo Principal</Text>
@@ -49,7 +52,7 @@ export default function ExerciseDetailScreen() {
         <Text style={styles.recordTitle}>Récord Personal (Max Peso)</Text>
         <Text style={styles.recordValue}>{maxWeight > 0 ? `${maxWeight} kg` : 'Sin registros'}</Text>
       </View>
-    </View>
+    </ScrollView>
   );
 }
 

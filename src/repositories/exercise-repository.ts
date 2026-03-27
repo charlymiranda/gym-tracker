@@ -13,6 +13,7 @@ export interface Exercise {
   sports_tags?: string | null;
   is_single_leg_focus?: boolean | number;
   is_injury_prevention?: boolean | number;
+  image_url?: string | null;
 }
 
 export class ExerciseRepository {
