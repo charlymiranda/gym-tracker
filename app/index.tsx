@@ -1,9 +1,11 @@
 import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
-import { theme } from '../src/themes/colors';
+import { useTheme } from '../src/themes/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function Home() {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const router = useRouter();
 
   const MENU_ITEMS = [
@@ -48,7 +50,7 @@ export default function Home() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: { flex: 1, backgroundColor: theme.colors.background },
   content: { padding: 20, paddingTop: 60, paddingBottom: 40 },
   header: { marginBottom: 30 },

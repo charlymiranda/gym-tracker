@@ -1,10 +1,12 @@
 import { View, Text, StyleSheet, Pressable, Vibration } from 'react-native';
 import { useWorkoutStore } from '../store/workout-store';
 import { useEffect, useState } from 'react';
-import { theme } from '../themes/colors';
+import { useTheme } from '../themes/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 
 export function RestTimer() {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const { restTimerEndTimestamp, clearRestTimer } = useWorkoutStore();
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
 
@@ -52,7 +54,7 @@ export function RestTimer() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: {
     position: 'absolute',
     bottom: 32,

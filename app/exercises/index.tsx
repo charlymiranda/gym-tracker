@@ -3,7 +3,7 @@ import { Link, useFocusEffect } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useCallback, useState, useMemo } from 'react';
 import { ExerciseRepository, Exercise } from '../../src/repositories/exercise-repository';
-import { theme } from '../../src/themes/colors';
+import { useTheme } from '../../src/themes/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 
 const MUSCLES = [
@@ -13,6 +13,8 @@ const MUSCLES = [
 ];
 
 export default function ExercisesListScreen() {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const db = useSQLiteContext();
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [search, setSearch] = useState('');
@@ -96,7 +98,7 @@ export default function ExercisesListScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: { flex: 1, backgroundColor: theme.colors.background },
   headerRow: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 },
   searchBox: { flexDirection: 'row', backgroundColor: theme.colors.surface, padding: 12, borderRadius: 12, alignItems: 'center' },

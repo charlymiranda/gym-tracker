@@ -3,10 +3,12 @@ import { useSQLiteContext } from 'expo-sqlite';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useState, useCallback } from 'react';
 import { BodyRepository, BodyMeasurement } from '../../src/repositories/body-repository';
-import { theme } from '../../src/themes/colors';
+import { useTheme } from '../../src/themes/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function BodyMetricsScreen() {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const db = useSQLiteContext();
   const router = useRouter();
   const [records, setRecords] = useState<BodyMeasurement[]>([]);
@@ -48,7 +50,7 @@ export default function BodyMetricsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: theme.colors.background },
   addBtn: { backgroundColor: theme.colors.primary, padding: 16, borderRadius: theme.borderRadius.md, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', marginBottom: 20 },
   addBtnText: { color: 'white', fontWeight: 'bold', fontSize: 16 },

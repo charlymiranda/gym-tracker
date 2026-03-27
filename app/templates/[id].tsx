@@ -6,11 +6,13 @@ import { TemplateRepository, WorkoutTemplate, TemplateExercise } from '../../src
 import { SessionRepository } from '../../src/repositories/session-repository';
 import { useWorkoutStore } from '../../src/store/workout-store';
 import { ExercisePickerModal } from '../../src/components/ExercisePickerModal';
-import { theme } from '../../src/themes/colors';
+import { useTheme } from '../../src/themes/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 
 // ... (TemplateExerciseItem remains the same, assuming it's above this in the file)
 function TemplateExerciseItem({ item, db, onRemove }: { item: TemplateExercise, db: SQLiteDatabase, onRemove: () => void }) {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const defaultSets = [{ reps: 10, weight: '' }];
   const [sets, setSets] = useState<{reps: number | string, weight: string}[]>(() => {
     try { return item.target_sets_data ? JSON.parse(item.target_sets_data) : defaultSets; } 
@@ -89,6 +91,8 @@ function TemplateExerciseItem({ item, db, onRemove }: { item: TemplateExercise, 
 }
 
 export default function TemplateDetailScreen() {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const db = useSQLiteContext();
@@ -198,7 +202,7 @@ export default function TemplateDetailScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: { flex: 1, backgroundColor: theme.colors.background },
   header: { padding: 20, backgroundColor: theme.colors.surface, borderBottomWidth: 1, borderBottomColor: theme.colors.border },
   title: { fontSize: 24, fontWeight: 'bold', color: theme.colors.text },

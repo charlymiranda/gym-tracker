@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, Modal, FlatList, Pressable, TextInput, ScrollView } from 'react-native';
 import { useSQLiteContext } from 'expo-sqlite';
 import { ExerciseRepository, Exercise } from '../repositories/exercise-repository';
-import { theme } from '../themes/colors';
+import { useTheme } from '../themes/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 
 interface ExercisePickerModalProps {
@@ -18,6 +18,8 @@ const MUSCLES = [
 ];
 
 export function ExercisePickerModal({ visible, onClose, onSelect }: ExercisePickerModalProps) {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const db = useSQLiteContext();
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [search, setSearch] = useState('');
@@ -108,7 +110,7 @@ export function ExercisePickerModal({ visible, onClose, onSelect }: ExercisePick
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: { flex: 1, backgroundColor: theme.colors.background },
   header: { padding: 16, backgroundColor: theme.colors.surface, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderBottomWidth: 1, borderBottomColor: theme.colors.border },
   title: { fontSize: 20, fontWeight: 'bold', color: theme.colors.text },

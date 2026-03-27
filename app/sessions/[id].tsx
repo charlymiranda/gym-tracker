@@ -6,10 +6,12 @@ import { SessionRepository, WorkoutSession, SessionExercise, WorkoutSet } from '
 import { ProgressRepository } from '../../src/repositories/stats-repository';
 import { ExercisePickerModal } from '../../src/components/ExercisePickerModal';
 import { Ionicons } from '@expo/vector-icons';
-import { theme } from '../../src/themes/colors';
+import { useTheme } from '../../src/themes/ThemeContext';
 import { useWorkoutStore } from '../../src/store/workout-store';
 
 function ExerciseSetsCard({ sessionExercise, isCompleted }: { sessionExercise: SessionExercise, isCompleted: boolean }) {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const db = useSQLiteContext();
   const [sets, setSets] = useState<WorkoutSet[]>([]);
   const [reps, setReps] = useState('');
@@ -114,6 +116,8 @@ function ExerciseSetsCard({ sessionExercise, isCompleted }: { sessionExercise: S
 }
 
 export default function ActiveSessionScreen() {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const { id } = useLocalSearchParams();
   const db = useSQLiteContext();
   const router = useRouter();
@@ -212,7 +216,7 @@ export default function ActiveSessionScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: { flex: 1, backgroundColor: theme.colors.background },
   header: { padding: 20, backgroundColor: theme.colors.surface, borderBottomWidth: 1, borderBottomColor: theme.colors.border },
   title: { fontSize: 24, fontWeight: 'bold', color: theme.colors.text },

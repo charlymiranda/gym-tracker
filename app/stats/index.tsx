@@ -3,10 +3,12 @@ import { useSQLiteContext } from 'expo-sqlite';
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { StatsRepository, GeneralStats } from '../../src/repositories/stats-repository';
-import { theme } from '../../src/themes/colors';
+import { useTheme } from '../../src/themes/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function StatsScreen() {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const db = useSQLiteContext();
   const [stats, setStats] = useState<GeneralStats | null>(null);
 
@@ -44,7 +46,7 @@ export default function StatsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: theme.colors.background },
   headerTitle: { fontSize: 24, fontWeight: 'bold', marginBottom: 24, color: theme.colors.text },
   grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },

@@ -4,9 +4,11 @@ import { useSQLiteContext } from 'expo-sqlite';
 import { useState, useCallback } from 'react';
 import { ProgressRepository } from '../../src/repositories/stats-repository';
 import { ExerciseRepository, Exercise } from '../../src/repositories/exercise-repository';
-import { theme } from '../../src/themes/colors';
+import { useTheme } from '../../src/themes/ThemeContext';
 
 export default function ExerciseDetailScreen() {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const { id } = useLocalSearchParams();
   const db = useSQLiteContext();
   const [exercise, setExercise] = useState<Exercise | null>(null);
@@ -51,7 +53,7 @@ export default function ExerciseDetailScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: { flex: 1, padding: 16, backgroundColor: theme.colors.background },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.background },
   loadingText: { color: theme.colors.textSecondary },

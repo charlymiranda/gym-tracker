@@ -3,11 +3,13 @@ import { useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useState, useCallback } from 'react';
 import { useFocusEffect } from 'expo-router';
-import { theme } from '../../src/themes/colors';
+import { useTheme } from '../../src/themes/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import { Exercise } from '../../src/repositories/exercise-repository';
 
 export default function RunningDashboard() {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const router = useRouter();
   const db = useSQLiteContext();
   const [exercises, setExercises] = useState<Exercise[]>([]);
@@ -71,7 +73,7 @@ export default function RunningDashboard() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: { flex: 1, backgroundColor: theme.colors.background, padding: 20 },
   hero: { alignItems: 'center', marginVertical: 32 },
   heroTitle: { color: theme.colors.text, fontSize: 24, fontWeight: 'bold', marginTop: 16 },

@@ -3,10 +3,12 @@ import { useSQLiteContext } from 'expo-sqlite';
 import { useState, useCallback } from 'react';
 import { useFocusEffect } from 'expo-router';
 import { GoalsRepository, Goal } from '../../src/repositories/goals-repository';
-import { theme } from '../../src/themes/colors';
+import { useTheme } from '../../src/themes/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function GoalsScreen() {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const db = useSQLiteContext();
   const [goals, setGoals] = useState<Goal[]>([]);
   const [title, setTitle] = useState('');
@@ -85,7 +87,7 @@ export default function GoalsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: theme.colors.background },
   addCard: { flexDirection: 'row', marginBottom: 24 },
   input: { flex: 1, backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border, borderRadius: theme.borderRadius.md, padding: 12, marginRight: 8, color: theme.colors.text },

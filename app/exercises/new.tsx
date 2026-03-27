@@ -5,9 +5,11 @@ import { ExerciseRepository } from '../../src/repositories/exercise-repository';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { exerciseSchema, ExerciseFormData } from '../../src/domain/validators/exercise-schema';
-import { theme } from '../../src/themes/colors';
+import { useTheme } from '../../src/themes/ThemeContext';
 
 export default function NewExerciseScreen() {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const db = useSQLiteContext();
   const router = useRouter();
   
@@ -85,7 +87,7 @@ export default function NewExerciseScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: { flex: 1, padding: 16, backgroundColor: theme.colors.background },
   label: { fontSize: 14, fontWeight: 'bold', marginTop: 16, marginBottom: 8, color: theme.colors.textSecondary, textTransform: 'uppercase' },
   labelSwitch: { fontSize: 16, fontWeight: 'bold', color: theme.colors.text },

@@ -2,11 +2,13 @@ import { View, Text, StyleSheet, FlatList, TextInput, Pressable } from 'react-na
 import { useSQLiteContext } from 'expo-sqlite';
 import { useState, useCallback } from 'react';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { theme } from '../../src/themes/colors';
+import { useTheme } from '../../src/themes/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import { Exercise } from '../../src/repositories/exercise-repository';
 
 export default function RunningCatalog() {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const db = useSQLiteContext();
   const router = useRouter();
   const [exercises, setExercises] = useState<Exercise[]>([]);
@@ -50,7 +52,7 @@ export default function RunningCatalog() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: { flex: 1, backgroundColor: theme.colors.background, padding: 20 },
   searchBox: { flexDirection: 'row', backgroundColor: theme.colors.surface, padding: 12, borderRadius: 12, alignItems: 'center', marginBottom: 20 },
   searchInput: { flex: 1, marginLeft: 12, color: theme.colors.text, fontSize: 16 },
