@@ -15,6 +15,7 @@ export interface TemplateExercise {
   name: string; // From joined exercise
   primary_muscle_group: string;
   sort_order: number;
+  target_sets_data?: string | null;
 }
 
 export class TemplateRepository {
@@ -40,7 +41,7 @@ export class TemplateRepository {
 
   async getTemplateExercises(templateId: string): Promise<TemplateExercise[]> {
     return await this.db.getAllAsync<TemplateExercise>(
-      `SELECT wte.id, wte.template_id, wte.exercise_id, wte.sort_order, e.name, e.primary_muscle_group
+      `SELECT wte.id, wte.template_id, wte.exercise_id, wte.sort_order, wte.target_sets_data, e.name, e.primary_muscle_group
        FROM workout_template_exercises wte
        JOIN exercises e ON wte.exercise_id = e.id
        WHERE wte.template_id = ?
@@ -51,10 +52,19 @@ export class TemplateRepository {
 
   async addExerciseToTemplate(templateId: string, exerciseId: string, sortOrder: number): Promise<void> {
     const id = Crypto.randomUUID();
+    // Default to one target set of 10 reps, empty weight
+    const defaultData = JSON.stringify([{ reps: 10, weight: '' }]);
     await this.db.runAsync(
-      `INSERT INTO workout_template_exercises (id, template_id, exercise_id, sort_order)
-       VALUES (?, ?, ?, ?)`,
-      [id, templateId, exerciseId, sortOrder]
+      `INSERT INTO workout_template_exercises (id, template_id, exercise_id, sort_order, target_sets_data)
+       VALUES (?, ?, ?, ?, ?)`,
+      [id, templateId, exerciseId, sortOrder, defaultData]
+    );
+  }
+
+  async updateTemplateExerciseSets(id: string, targetSetsData: string): Promise<void> {
+    await this.db.runAsync(
+      'UPDATE workout_template_exercises SET target_sets_data = ? WHERE id = ?',
+      [targetSetsData, id]
     );
   }
 

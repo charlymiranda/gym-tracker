@@ -178,4 +178,12 @@ export async function runMigrations(db: SQLiteDatabase) {
     `);
     currentVersion = 2;
   }
+
+  if (currentVersion === 2) {
+    await db.execAsync(`
+      ALTER TABLE workout_template_exercises ADD COLUMN target_sets_data TEXT NULL;
+      PRAGMA user_version = 3;
+    `);
+    currentVersion = 3;
+  }
 }
