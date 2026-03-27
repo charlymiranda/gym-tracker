@@ -18,7 +18,8 @@ export default function SettingsScreen() {
   const toggleUnit = async (val: boolean) => {
     setUseLbs(val);
     try {
-      // TODO: implement setPreference in repo
+      const repo = new PreferencesRepository(db);
+      await repo.setPreference('preferred_weight_unit', val ? 'lbs' : 'kg');
     } catch (e) {
       console.error(e);
     }
