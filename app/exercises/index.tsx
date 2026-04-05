@@ -1,4 +1,4 @@
-import { View, Text, FlatList, StyleSheet, Pressable, ScrollView, TextInput } from 'react-native';
+import { View, Text, FlatList, StyleSheet, Pressable, ScrollView, TextInput, Image } from 'react-native';
 import { Link, useFocusEffect } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useCallback, useState, useMemo } from 'react';
@@ -82,17 +82,29 @@ export default function ExercisesListScreen() {
         contentContainerStyle={{ paddingBottom: 80 }}
         initialNumToRender={15}
         windowSize={5}
-        renderItem={({ item }) => (
-          <Link href={`/exercises/${item.id}`} asChild>
-            <Pressable style={styles.card}>
-              <View style={styles.cardHeader}>
-                <Text style={styles.name}>{item.name}</Text>
-                {item.type === 'system' && <Text style={styles.badge}>Sistema</Text>}
-              </View>
-              <Text style={styles.meta}>{item.primary_muscle_group} • {item.equipment_type}</Text>
-            </Pressable>
-          </Link>
-        )}
+        renderItem={({ item }) => {
+          const thumbUrl = item.image_url ? item.image_url.split(',')[0] : null;
+          return (
+            <Link href={`/exercises/${item.id}`} asChild>
+              <Pressable style={styles.card}>
+                <View style={styles.thumbContainer}>
+                  {thumbUrl ? (
+                    <Image source={{ uri: thumbUrl }} style={styles.thumb} resizeMode="contain" />
+                  ) : (
+                    <Ionicons name="barbell" size={28} color={theme.colors.border} />
+                  )}
+                </View>
+                <View style={{ flex: 1 }}>
+                  <View style={styles.cardHeader}>
+                    <Text style={styles.name}>{item.name}</Text>
+                    {item.type === 'system' && <Text style={styles.badge}>Sistema</Text>}
+                  </View>
+                  <Text style={styles.meta}>{item.primary_muscle_group} • {item.equipment_type}</Text>
+                </View>
+              </Pressable>
+            </Link>
+          );
+        }}
       />
     </View>
   );
@@ -108,7 +120,9 @@ const getStyles = (theme: any) => StyleSheet.create({
   chipActive: { backgroundColor: theme.colors.primary, borderColor: theme.colors.primary },
   chipText: { color: theme.colors.textSecondary, fontWeight: 'bold' },
   chipTextActive: { color: 'white' },
-  card: { backgroundColor: theme.colors.card, marginHorizontal: 16, padding: 16, borderRadius: theme.borderRadius.lg, marginBottom: 12 },
+  card: { backgroundColor: theme.colors.card, flexDirection: 'row', marginHorizontal: 16, padding: 16, borderRadius: theme.borderRadius.lg, marginBottom: 12 },
+  thumbContainer: { width: 60, height: 60, borderRadius: 12, backgroundColor: '#ffffff', justifyContent: 'center', alignItems: 'center', marginRight: 16, borderWidth: 1, borderColor: theme.colors.border, overflow: 'hidden' },
+  thumb: { width: '100%', height: '100%' },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   name: { fontSize: 18, fontWeight: 'bold', flex: 1, color: theme.colors.text },
   badge: { backgroundColor: theme.colors.badgeBg, color: theme.colors.badgeText, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12, fontSize: 12, overflow: 'hidden' },

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, Text, StyleSheet, Modal, FlatList, Pressable, TextInput, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Modal, FlatList, Pressable, TextInput, ScrollView, Image } from 'react-native';
 import { useSQLiteContext } from 'expo-sqlite';
 import { ExerciseRepository, Exercise } from '../repositories/exercise-repository';
 import { useTheme } from '../themes/ThemeContext';
@@ -86,21 +86,33 @@ export function ExercisePickerModal({ visible, onClose, onSelect }: ExercisePick
           keyExtractor={item => item.id}
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={{ paddingBottom: 40 }}
-          renderItem={({ item }) => (
-            <Pressable 
-              style={styles.item}
-              onPress={() => {
-                onSelect(item.id);
-                onClose();
-              }}
-            >
-              <View style={styles.itemHeader}>
-                <Text style={styles.itemName}>{item.name}</Text>
-                {item.type === 'system' && <Text style={styles.badge}>Sistema</Text>}
-              </View>
-              <Text style={styles.itemMeta}>{item.primary_muscle_group} • {item.equipment_type}</Text>
-            </Pressable>
-          )}
+          renderItem={({ item }) => {
+            const thumbUrl = item.image_url ? item.image_url.split(',')[0] : null;
+            return (
+              <Pressable 
+                style={styles.item}
+                onPress={() => {
+                  onSelect(item.id);
+                  onClose();
+                }}
+              >
+                <View style={styles.thumbContainer}>
+                  {thumbUrl ? (
+                    <Image source={{ uri: thumbUrl }} style={styles.thumb} resizeMode="contain" />
+                  ) : (
+                    <Ionicons name="barbell" size={24} color={theme.colors.border} />
+                  )}
+                </View>
+                <View style={{ flex: 1 }}>
+                  <View style={styles.itemHeader}>
+                    <Text style={styles.itemName}>{item.name}</Text>
+                    {item.type === 'system' && <Text style={styles.badge}>Sistema</Text>}
+                  </View>
+                  <Text style={styles.itemMeta}>{item.primary_muscle_group} • {item.equipment_type}</Text>
+                </View>
+              </Pressable>
+            );
+          }}
           ListEmptyComponent={
             <Text style={styles.emptyText}>No se encontraron ejercicios.</Text>
           }
@@ -123,7 +135,9 @@ const getStyles = (theme: any) => StyleSheet.create({
   chipActive: { backgroundColor: theme.colors.primary, borderColor: theme.colors.primary },
   chipText: { color: theme.colors.textSecondary, fontWeight: 'bold' },
   chipTextActive: { color: 'white' },
-  item: { backgroundColor: theme.colors.card, padding: 16, marginHorizontal: 16, marginBottom: 8, borderRadius: theme.borderRadius.md, borderBottomWidth: 1, borderBottomColor: theme.colors.border },
+  item: { backgroundColor: theme.colors.card, flexDirection: 'row', padding: 16, marginHorizontal: 16, marginBottom: 8, borderRadius: theme.borderRadius.md, borderBottomWidth: 1, borderBottomColor: theme.colors.border },
+  thumbContainer: { width: 50, height: 50, borderRadius: 8, backgroundColor: '#fff', justifyContent: 'center', alignItems: 'center', marginRight: 12, borderWidth: 1, borderColor: theme.colors.border, overflow: 'hidden' },
+  thumb: { width: '100%', height: '100%' },
   itemHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   itemName: { fontSize: 16, fontWeight: 'bold', flex: 1, color: theme.colors.text },
   badge: { backgroundColor: theme.colors.badgeBg, color: theme.colors.badgeText, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 8, fontSize: 10, overflow: 'hidden' },
