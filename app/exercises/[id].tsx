@@ -1,12 +1,15 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useState, useCallback } from 'react';
 import { ProgressRepository } from '../../src/repositories/stats-repository';
 import { ExerciseRepository, Exercise } from '../../src/repositories/exercise-repository';
-import { theme } from '../../src/themes/colors';
+import { useTheme } from '../../src/themes/ThemeContext';
+import { AnimatedExercisePreview } from '../../src/components/AnimatedExercisePreview';
 
 export default function ExerciseDetailScreen() {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const { id } = useLocalSearchParams();
   const db = useSQLiteContext();
   const [exercise, setExercise] = useState<Exercise | null>(null);
@@ -32,8 +35,10 @@ export default function ExerciseDetailScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>{exercise.name}</Text>
+    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 40 }}>
+      {!!exercise.image_url && <AnimatedExercisePreview imageUrls={exercise.image_url} />}
+      
+      <Text style={[styles.title, !!exercise.image_url && { marginTop: 0 }]}>{exercise.name}</Text>
       
       <View style={styles.card}>
         <Text style={styles.metaLabel}>Músculo Principal</Text>
@@ -47,11 +52,11 @@ export default function ExerciseDetailScreen() {
         <Text style={styles.recordTitle}>Récord Personal (Max Peso)</Text>
         <Text style={styles.recordValue}>{maxWeight > 0 ? `${maxWeight} kg` : 'Sin registros'}</Text>
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: { flex: 1, padding: 16, backgroundColor: theme.colors.background },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.background },
   loadingText: { color: theme.colors.textSecondary },

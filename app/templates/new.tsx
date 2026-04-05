@@ -5,9 +5,11 @@ import { TemplateRepository } from '../../src/repositories/template-repository';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { templateSchema, TemplateFormData } from '../../src/domain/validators/template-schema';
-import { theme } from '../../src/themes/colors';
+import { useTheme } from '../../src/themes/ThemeContext';
 
 export default function NewTemplateScreen() {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const db = useSQLiteContext();
   const router = useRouter();
   
@@ -55,7 +57,7 @@ export default function NewTemplateScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: theme.colors.background },
   label: { fontSize: 14, fontWeight: 'bold', marginTop: 16, marginBottom: 8, color: theme.colors.textSecondary, textTransform: 'uppercase' },
   input: { borderWidth: 1, borderColor: theme.colors.border, backgroundColor: theme.colors.surface, borderRadius: theme.borderRadius.md, padding: 16, fontSize: 16, color: theme.colors.text },

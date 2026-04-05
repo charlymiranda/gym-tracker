@@ -3,10 +3,12 @@ import { Link, useFocusEffect, useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useCallback, useState } from 'react';
 import { SessionRepository, WorkoutSession } from '../../src/repositories/session-repository';
-import { theme } from '../../src/themes/colors';
+import { useTheme } from '../../src/themes/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function HistoryScreen() {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const db = useSQLiteContext();
   const router = useRouter();
   const [sessions, setSessions] = useState<WorkoutSession[]>([]);
@@ -71,7 +73,7 @@ export default function HistoryScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: { flex: 1, padding: 16, backgroundColor: theme.colors.background },
   startBtn: { backgroundColor: theme.colors.primary, padding: 16, borderRadius: theme.borderRadius.md, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', marginBottom: 20, elevation: 4, shadowColor: theme.colors.primary, shadowOpacity: 0.3, shadowRadius: 8, shadowOffset: { width: 0, height: 4 } },
   startBtnText: { color: 'white', fontSize: 16, fontWeight: 'bold' },

@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Modal, FlatList, Pressable, TextInput } from 'react-native';
+import React, { useState, useEffect, useMemo } from 'react';
+import { View, Text, StyleSheet, Modal, FlatList, Pressable, TextInput, ScrollView, Image } from 'react-native';
 import { useSQLiteContext } from 'expo-sqlite';
 import { ExerciseRepository, Exercise } from '../repositories/exercise-repository';
+import { useTheme } from '../themes/ThemeContext';
+import { Ionicons } from '@expo/vector-icons';
 
 interface ExercisePickerModalProps {
   visible: boolean;
@@ -9,10 +11,19 @@ interface ExercisePickerModalProps {
   onSelect: (exerciseId: string) => void;
 }
 
+const MUSCLES = [
+  'Pecho', 'Hombros', 'Dorsales', 'Espalda Media', 'Espalda Baja',
+  'Cuádriceps', 'Isquiotibiales', 'Glúteos', 'Pantorrillas', 
+  'Tríceps', 'Bíceps', 'Abdominales', 'Antebrazos'
+];
+
 export function ExercisePickerModal({ visible, onClose, onSelect }: ExercisePickerModalProps) {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const db = useSQLiteContext();
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [search, setSearch] = useState('');
+  const [muscle, setMuscle] = useState<string | null>(null);
 
   useEffect(() => {
     if (visible) {
@@ -21,10 +32,13 @@ export function ExercisePickerModal({ visible, onClose, onSelect }: ExercisePick
     }
   }, [visible, db]);
 
-  const filteredExercises = exercises.filter(
-    e => e.name.toLowerCase().includes(search.toLowerCase()) || 
-         e.primary_muscle_group.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredExercises = useMemo(() => {
+    return exercises.filter(ex => {
+      const matchSearch = search ? ex.name.toLowerCase().includes(search.toLowerCase()) : true;
+      const matchMuscle = muscle ? ex.primary_muscle_group === muscle : true;
+      return matchSearch && matchMuscle;
+    });
+  }, [exercises, search, muscle]);
 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
@@ -37,33 +51,68 @@ export function ExercisePickerModal({ visible, onClose, onSelect }: ExercisePick
         </View>
 
         <View style={styles.searchContainer}>
+          <Ionicons name="search" size={20} color={theme.colors.border} />
           <TextInput
             style={styles.searchInput}
-            placeholder="Buscar por nombre o músculo..."
+            placeholder="Buscar por nombre..."
+            placeholderTextColor={theme.colors.border}
             value={search}
             onChangeText={setSearch}
           />
+        </View>
+
+        <View style={{ height: 50, marginBottom: 8 }}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterScroll}>
+            <Pressable 
+              style={[styles.chip, !muscle && styles.chipActive]} 
+              onPress={() => setMuscle(null)}
+            >
+              <Text style={[styles.chipText, !muscle && styles.chipTextActive]}>Todos</Text>
+            </Pressable>
+            {MUSCLES.map(m => (
+              <Pressable 
+                key={m} 
+                style={[styles.chip, muscle === m && styles.chipActive]} 
+                onPress={() => setMuscle(muscle === m ? null : m)}
+              >
+                <Text style={[styles.chipText, muscle === m && styles.chipTextActive]}>{m}</Text>
+              </Pressable>
+            ))}
+          </ScrollView>
         </View>
 
         <FlatList
           data={filteredExercises}
           keyExtractor={item => item.id}
           keyboardShouldPersistTaps="handled"
-          renderItem={({ item }) => (
-            <Pressable 
-              style={styles.item}
-              onPress={() => {
-                onSelect(item.id);
-                onClose();
-              }}
-            >
-              <View style={styles.itemHeader}>
-                <Text style={styles.itemName}>{item.name}</Text>
-                {item.type === 'system' && <Text style={styles.badge}>Sistema</Text>}
-              </View>
-              <Text style={styles.itemMeta}>{item.primary_muscle_group} • {item.equipment_type}</Text>
-            </Pressable>
-          )}
+          contentContainerStyle={{ paddingBottom: 40 }}
+          renderItem={({ item }) => {
+            const thumbUrl = item.image_url ? item.image_url.split(',')[0] : null;
+            return (
+              <Pressable 
+                style={styles.item}
+                onPress={() => {
+                  onSelect(item.id);
+                  onClose();
+                }}
+              >
+                <View style={styles.thumbContainer}>
+                  {thumbUrl ? (
+                    <Image source={{ uri: thumbUrl }} style={styles.thumb} resizeMode="contain" />
+                  ) : (
+                    <Ionicons name="barbell" size={24} color={theme.colors.border} />
+                  )}
+                </View>
+                <View style={{ flex: 1 }}>
+                  <View style={styles.itemHeader}>
+                    <Text style={styles.itemName}>{item.name}</Text>
+                    {item.type === 'system' && <Text style={styles.badge}>Sistema</Text>}
+                  </View>
+                  <Text style={styles.itemMeta}>{item.primary_muscle_group} • {item.equipment_type}</Text>
+                </View>
+              </Pressable>
+            );
+          }}
           ListEmptyComponent={
             <Text style={styles.emptyText}>No se encontraron ejercicios.</Text>
           }
@@ -73,18 +122,25 @@ export function ExercisePickerModal({ visible, onClose, onSelect }: ExercisePick
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f9f9f9' },
-  header: { padding: 16, backgroundColor: 'white', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderBottomWidth: 1, borderBottomColor: '#eee' },
-  title: { fontSize: 20, fontWeight: 'bold' },
+const getStyles = (theme: any) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: theme.colors.background },
+  header: { padding: 16, backgroundColor: theme.colors.surface, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderBottomWidth: 1, borderBottomColor: theme.colors.border },
+  title: { fontSize: 20, fontWeight: 'bold', color: theme.colors.text },
   closeBtn: { padding: 8 },
-  closeBtnText: { color: '#007AFF', fontSize: 16 },
-  searchContainer: { padding: 16, backgroundColor: 'white', borderBottomWidth: 1, borderBottomColor: '#eee' },
-  searchInput: { backgroundColor: '#f1f1f1', padding: 12, borderRadius: 8, fontSize: 16 },
-  item: { backgroundColor: 'white', padding: 16, borderBottomWidth: 1, borderBottomColor: '#eee' },
+  closeBtnText: { color: theme.colors.primary, fontSize: 16, fontWeight: 'bold' },
+  searchContainer: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 12, backgroundColor: theme.colors.background, flexDirection: 'row', alignItems: 'center' },
+  searchInput: { flex: 1, backgroundColor: theme.colors.surface, padding: 12, borderRadius: 8, fontSize: 16, color: theme.colors.text, marginLeft: 12 },
+  filterScroll: { paddingHorizontal: 16, alignItems: 'center' },
+  chip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, backgroundColor: theme.colors.surface, marginRight: 8, borderWidth: 1, borderColor: theme.colors.border },
+  chipActive: { backgroundColor: theme.colors.primary, borderColor: theme.colors.primary },
+  chipText: { color: theme.colors.textSecondary, fontWeight: 'bold' },
+  chipTextActive: { color: 'white' },
+  item: { backgroundColor: theme.colors.card, flexDirection: 'row', padding: 16, marginHorizontal: 16, marginBottom: 8, borderRadius: theme.borderRadius.md, borderBottomWidth: 1, borderBottomColor: theme.colors.border },
+  thumbContainer: { width: 50, height: 50, borderRadius: 8, backgroundColor: '#fff', justifyContent: 'center', alignItems: 'center', marginRight: 12, borderWidth: 1, borderColor: theme.colors.border, overflow: 'hidden' },
+  thumb: { width: '100%', height: '100%' },
   itemHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  itemName: { fontSize: 16, fontWeight: 'bold', flex: 1 },
-  badge: { backgroundColor: '#e0f2fe', color: '#0284c7', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 8, fontSize: 10, overflow: 'hidden' },
-  itemMeta: { fontSize: 13, color: '#666', marginTop: 4 },
-  emptyText: { textAlign: 'center', color: '#999', marginTop: 32 }
+  itemName: { fontSize: 16, fontWeight: 'bold', flex: 1, color: theme.colors.text },
+  badge: { backgroundColor: theme.colors.badgeBg, color: theme.colors.badgeText, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 8, fontSize: 10, overflow: 'hidden' },
+  itemMeta: { fontSize: 13, color: theme.colors.textSecondary, marginTop: 4 },
+  emptyText: { textAlign: 'center', color: theme.colors.textSecondary, marginTop: 32 }
 });

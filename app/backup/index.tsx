@@ -1,10 +1,12 @@
 import { View, Text, StyleSheet, Pressable, Alert } from 'react-native';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
-import { theme } from '../../src/themes/colors';
+import { useTheme } from '../../src/themes/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function BackupScreen() {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const exportDb = async () => {
     try {
       // @ts-ignore
@@ -46,7 +48,7 @@ export default function BackupScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: theme.colors.background },
   title: { fontSize: 24, fontWeight: 'bold', color: theme.colors.text, marginBottom: 16 },
   desc: { fontSize: 16, color: theme.colors.textSecondary, marginBottom: 32, lineHeight: 24 },

@@ -186,4 +186,12 @@ export async function runMigrations(db: SQLiteDatabase) {
     `);
     currentVersion = 3;
   }
+
+  if (currentVersion === 3) {
+    await db.execAsync(`
+      ALTER TABLE user_preferences ADD COLUMN user_name TEXT NULL;
+      PRAGMA user_version = 4;
+    `);
+    currentVersion = 4;
+  }
 }

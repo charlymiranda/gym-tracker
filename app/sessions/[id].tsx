@@ -6,10 +6,30 @@ import { SessionRepository, WorkoutSession, SessionExercise, WorkoutSet } from '
 import { ProgressRepository } from '../../src/repositories/stats-repository';
 import { ExercisePickerModal } from '../../src/components/ExercisePickerModal';
 import { Ionicons } from '@expo/vector-icons';
-import { theme } from '../../src/themes/colors';
+import { useTheme } from '../../src/themes/ThemeContext';
 import { useWorkoutStore } from '../../src/store/workout-store';
 
+const calculatePlates = (totalWeight: number) => {
+  if (totalWeight <= 20) return null;
+  let remainingSide = (totalWeight - 20) / 2;
+  const availablePlates = [25, 20, 15, 10, 5, 2.5, 1.25];
+  const counts: Record<number, number> = {};
+  
+  for (const p of availablePlates) {
+    while (remainingSide >= p - 0.01) {
+      counts[p] = (counts[p] || 0) + 1;
+      remainingSide -= p;
+    }
+  }
+  
+  const entries = Object.entries(counts).sort((a,b) => Number(b[0]) - Number(a[0]));
+  if (entries.length === 0) return null;
+  return entries.map(([p, c]) => `${c > 1 ? `${c}x` : ''}${p}kg`).join(' + ');
+};
+
 function ExerciseSetsCard({ sessionExercise, isCompleted }: { sessionExercise: SessionExercise, isCompleted: boolean }) {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const db = useSQLiteContext();
   const [sets, setSets] = useState<WorkoutSet[]>([]);
   const [reps, setReps] = useState('');
@@ -54,6 +74,9 @@ function ExerciseSetsCard({ sessionExercise, isCompleted }: { sessionExercise: S
     setReps(Math.max(0, r + amount).toString());
   };
 
+  const currentWeightNum = parseFloat(weight.replace(',', '.')) || 0;
+  const plateSuggest = calculatePlates(currentWeightNum);
+
   return (
     <View style={styles.exerciseCard}>
       <View style={styles.exHeader}>
@@ -82,31 +105,39 @@ function ExerciseSetsCard({ sessionExercise, isCompleted }: { sessionExercise: S
 
       {!isCompleted && (
         <View style={styles.inputContainer}>
-          <View style={styles.quickInputWrapper}>
-            <View style={styles.quickInputControls}>
-              <Pressable style={styles.adjustBtn} onPress={() => adjustWeight(-2.5)}><Text style={styles.adjustBtnText}>-</Text></Pressable>
-              <View style={styles.inputBox}>
-                <TextInput style={styles.quickInput} keyboardType="numeric" value={weight} onChangeText={setWeight} placeholder="0" placeholderTextColor={theme.colors.border} />
-                <Text style={styles.inputHelp}>kg</Text>
-              </View>
-              <Pressable style={styles.adjustBtn} onPress={() => adjustWeight(2.5)}><Text style={styles.adjustBtnText}>+</Text></Pressable>
+          {plateSuggest && (
+            <View style={styles.plateSuggestBox}>
+              <Ionicons name="calculator-outline" size={14} color={theme.colors.textSecondary} />
+              <Text style={styles.plateSuggestText}>Discos/lado (barra 20kg): {plateSuggest}</Text>
             </View>
-          </View>
-          
-          <View style={styles.quickInputWrapper}>
-            <View style={styles.quickInputControls}>
-              <Pressable style={styles.adjustBtn} onPress={() => adjustReps(-1)}><Text style={styles.adjustBtnText}>-</Text></Pressable>
-              <View style={styles.inputBox}>
-                <TextInput style={styles.quickInput} keyboardType="numeric" value={reps} onChangeText={setReps} placeholder="0" placeholderTextColor={theme.colors.border} />
-                <Text style={styles.inputHelp}>reps</Text>
+          )}
+          <View style={{ flexDirection: 'row', width: '100%', alignItems: 'center' }}>
+            <View style={styles.quickInputWrapper}>
+              <View style={styles.quickInputControls}>
+                <Pressable style={styles.adjustBtn} onPress={() => adjustWeight(-2.5)}><Text style={styles.adjustBtnText}>-</Text></Pressable>
+                <View style={styles.inputBox}>
+                  <TextInput style={styles.quickInput} keyboardType="numeric" value={weight} onChangeText={setWeight} placeholder="0" placeholderTextColor={theme.colors.border} />
+                  <Text style={styles.inputHelp}>kg</Text>
+                </View>
+                <Pressable style={styles.adjustBtn} onPress={() => adjustWeight(2.5)}><Text style={styles.adjustBtnText}>+</Text></Pressable>
               </View>
-              <Pressable style={styles.adjustBtn} onPress={() => adjustReps(1)}><Text style={styles.adjustBtnText}>+</Text></Pressable>
             </View>
-          </View>
+            
+            <View style={styles.quickInputWrapper}>
+              <View style={styles.quickInputControls}>
+                <Pressable style={styles.adjustBtn} onPress={() => adjustReps(-1)}><Text style={styles.adjustBtnText}>-</Text></Pressable>
+                <View style={styles.inputBox}>
+                  <TextInput style={styles.quickInput} keyboardType="numeric" value={reps} onChangeText={setReps} placeholder="0" placeholderTextColor={theme.colors.border} />
+                  <Text style={styles.inputHelp}>reps</Text>
+                </View>
+                <Pressable style={styles.adjustBtn} onPress={() => adjustReps(1)}><Text style={styles.adjustBtnText}>+</Text></Pressable>
+              </View>
+            </View>
 
-          <Pressable style={styles.addSetBtn} onPress={handleAddSet}>
-            <Ionicons name="checkmark" size={28} color="white" />
-          </Pressable>
+            <Pressable style={styles.addSetBtn} onPress={handleAddSet}>
+              <Ionicons name="checkmark" size={28} color="white" />
+            </Pressable>
+          </View>
         </View>
       )}
     </View>
@@ -114,6 +145,8 @@ function ExerciseSetsCard({ sessionExercise, isCompleted }: { sessionExercise: S
 }
 
 export default function ActiveSessionScreen() {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const { id } = useLocalSearchParams();
   const db = useSQLiteContext();
   const router = useRouter();
@@ -212,7 +245,7 @@ export default function ActiveSessionScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: { flex: 1, backgroundColor: theme.colors.background },
   header: { padding: 20, backgroundColor: theme.colors.surface, borderBottomWidth: 1, borderBottomColor: theme.colors.border },
   title: { fontSize: 24, fontWeight: 'bold', color: theme.colors.text },
@@ -240,7 +273,9 @@ const styles = StyleSheet.create({
   setCol: { flex: 1, textAlign: 'center', fontSize: 16, color: theme.colors.text, fontWeight: '500' },
   setColTick: { width: 40, textAlign: 'center' },
   
-  inputContainer: { flexDirection: 'row', padding: 12, backgroundColor: theme.colors.background, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' },
+  inputContainer: { flexDirection: 'column', padding: 12, backgroundColor: theme.colors.background, flexWrap: 'wrap' },
+  plateSuggestBox: { flexDirection: 'row', width: '100%', alignItems: 'center', justifyContent: 'center', backgroundColor: theme.colors.surface, padding: 8, borderRadius: 8, marginBottom: 8, gap: 6 },
+  plateSuggestText: { color: theme.colors.textSecondary, fontSize: 12, fontWeight: '500' },
   quickInputWrapper: { flex: 1, marginRight: 8 },
   quickInputControls: { flexDirection: 'row', alignItems: 'center', backgroundColor: theme.colors.surface, borderRadius: theme.borderRadius.md, overflow: 'hidden', borderWidth: 1, borderColor: theme.colors.border },
   adjustBtn: { padding: 10, backgroundColor: theme.colors.border },

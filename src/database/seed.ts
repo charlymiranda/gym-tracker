@@ -7,7 +7,30 @@ export async function runInitialSeed(db: SQLiteDatabase) {
   );
 
   if (existing && existing.count > 100) {
-    console.log('Seed: System exercises already exist, skipping massive seed...');
+    const hasImages = await db.getFirstAsync<{ count: number }>("SELECT COUNT(*) as count FROM exercises WHERE image_url IS NOT NULL");
+    if (hasImages && hasImages.count > 0) {
+      console.log('Seed: System exercises and images already exist, skipping massive seed...');
+      return;
+    }
+    
+    console.log('Seed: Images missing for existing catalog, running bulk update...');
+    await db.execAsync('BEGIN TRANSACTION;');
+    const updateStmt = await db.prepareAsync("UPDATE exercises SET image_url = $url WHERE id = $id");
+    try {
+      for (const ex of yuhonasData as any[]) {
+        if (!ex.images || !Array.isArray(ex.images) || ex.images.length === 0) continue;
+        const baseUrl = 'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/';
+        const urls = ex.images.map((img: string) => baseUrl + img).join(',');
+        // For existing users, ex.id is the ID used during initial Phase 4 seeding!
+        await updateStmt.executeAsync({ $url: urls, $id: String(ex.id) });
+      }
+      await db.execAsync('COMMIT;');
+    } catch(e) {
+      await db.execAsync('ROLLBACK;');
+      console.error('Update images error', e);
+    } finally {
+      await updateStmt.finalizeAsync();
+    }
     return;
   }
 
@@ -20,12 +43,12 @@ export async function runInitialSeed(db: SQLiteDatabase) {
     INSERT INTO exercises (
       id, type, name, primary_muscle_group, secondary_muscle_groups,
       equipment_type, movement_pattern, exercise_type, is_unilateral,
-      difficulty, instructions, tags, created_at, updated_at,
+      difficulty, instructions, tags, image_url, created_at, updated_at,
       running_recommended, sports_tags, is_single_leg_focus, is_injury_prevention
     ) VALUES (
       $id, $type, $name, $primary_muscle_group, $secondary_muscle_groups,
       $equipment_type, $movement_pattern, $exercise_type, $is_unilateral,
-      $difficulty, $instructions, $tags, $created_at, $updated_at,
+      $difficulty, $instructions, $tags, $image_url, $created_at, $updated_at,
       $running_recommended, $sports_tags, $is_single_leg_focus, $is_injury_prevention
     )
   `);
@@ -83,6 +106,12 @@ export async function runInitialSeed(db: SQLiteDatabase) {
         return 0;
       };
 
+      const buildImageUrls = () => {
+        if (!ex.images || !Array.isArray(ex.images) || ex.images.length === 0) return null;
+        const baseUrl = 'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/';
+        return ex.images.map((img: string) => baseUrl + img).join(',');
+      };
+
       await statement.executeAsync({
         $id: ex.id || String(Math.random()),
         $type: 'system',
@@ -101,7 +130,8 @@ export async function runInitialSeed(db: SQLiteDatabase) {
         $running_recommended: isRunner(),
         $sports_tags: isRunner() ? 'running' : null,
         $is_single_leg_focus: isSingleLeg(),
-        $is_injury_prevention: isInjuryPrevention()
+        $is_injury_prevention: isInjuryPrevention(),
+        $image_url: buildImageUrls()
       });
     }
 
@@ -138,7 +168,8 @@ export async function runInitialSeed(db: SQLiteDatabase) {
         $running_recommended: 1,
         $sports_tags: 'running, track',
         $is_single_leg_focus: drill.name.includes('Single') ? 1 : 0,
-        $is_injury_prevention: drill.name.includes('Tibialis') ? 1 : 0
+        $is_injury_prevention: drill.name.includes('Tibialis') ? 1 : 0,
+        $image_url: null
       });
     }
 

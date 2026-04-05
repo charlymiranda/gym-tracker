@@ -4,6 +4,7 @@ import { runMigrations } from '../src/database/migrations';
 import { runInitialSeed } from '../src/database/seed';
 import { type SQLiteDatabase } from 'expo-sqlite';
 import { RestTimer } from '../src/components/RestTimer';
+import { ThemeProvider, useTheme } from '../src/themes/ThemeContext';
 
 async function initializeDatabase(db: SQLiteDatabase) {
   try {
@@ -14,14 +15,16 @@ async function initializeDatabase(db: SQLiteDatabase) {
   }
 }
 
-export default function RootLayout() {
+function AppNavigator() {
+  const { theme } = useTheme();
+  
   return (
-    <SQLiteProvider databaseName="gymtracker.db" onInit={initializeDatabase} useSuspense>
+    <>
       <Stack
         screenOptions={{
-          headerStyle: { backgroundColor: '#1E1E1E' },
-          headerTintColor: '#F9FAFB',
-          contentStyle: { backgroundColor: '#121212' },
+          headerStyle: { backgroundColor: theme.colors.surface },
+          headerTintColor: theme.colors.text,
+          contentStyle: { backgroundColor: theme.colors.background },
           headerShadowVisible: false,
         }}
       >
@@ -45,6 +48,16 @@ export default function RootLayout() {
         <Stack.Screen name="running/routines" options={{ title: 'Rutinas Recomendadas' }} />
       </Stack>
       <RestTimer />
+    </>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <SQLiteProvider databaseName="gymtracker.db" onInit={initializeDatabase} useSuspense>
+      <ThemeProvider>
+        <AppNavigator />
+      </ThemeProvider>
     </SQLiteProvider>
   );
 }

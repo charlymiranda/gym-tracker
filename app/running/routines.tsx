@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { theme } from '../../src/themes/colors';
+import { useTheme } from '../../src/themes/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 
 const ROUTINES = {
@@ -27,6 +27,8 @@ const ROUTINES = {
 };
 
 export default function RunningRoutines() {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const router = useRouter();
   const { type } = useLocalSearchParams<{ type: keyof typeof ROUTINES }>();
   const routine = ROUTINES[type || 'strength'];
@@ -54,7 +56,7 @@ export default function RunningRoutines() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: { flex: 1, backgroundColor: theme.colors.background, padding: 20 },
   hero: { alignItems: 'center', marginBottom: 32, marginTop: 24 },
   title: { color: theme.colors.text, fontSize: 24, fontWeight: 'bold', marginTop: 16 },
