@@ -1,10 +1,12 @@
-import { View, Text, StyleSheet, Pressable, ScrollView, Modal, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView, Modal, TextInput, KeyboardAvoidingView, Platform, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTheme } from '../src/themes/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useState, useEffect } from 'react';
 import { useSQLiteContext } from 'expo-sqlite';
 import { PreferencesRepository } from '../src/repositories/extra-repositories';
+import { StatsRepository } from '../src/repositories/stats-repository';
+import { ContributionGraph } from 'react-native-chart-kit';
 
 const MOTIVATIONAL_QUOTES = [
   "El dolor de hoy es la fuerza de mañana.",
@@ -34,23 +36,30 @@ export default function Home() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [tempName, setTempName] = useState('');
   const [dailyQuote, setDailyQuote] = useState('');
+  const [consistencyDates, setConsistencyDates] = useState<string[]>([]);
 
   useEffect(() => {
     // Escoger frase aleatoria para la sesión
     const random = Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length);
     setDailyQuote(MOTIVATIONAL_QUOTES[random]);
 
-    // Cargar perfil
-    const loadProfile = async () => {
-      const repo = new PreferencesRepository(db);
-      const prefs = await repo.getPreferences();
+    // Cargar perfil y estadísticas
+    const loadData = async () => {
+      const prefsRepo = new PreferencesRepository(db);
+      const statsRepo = new StatsRepository(db);
+      
+      const prefs = await prefsRepo.getPreferences();
       if (prefs && prefs.user_name) {
         setUserName(prefs.user_name);
       } else {
         setShowOnboarding(true);
       }
+
+      const dates = await statsRepo.getConsistencyDates();
+      setConsistencyDates(dates);
     };
-    loadProfile();
+    
+    loadData();
   }, [db]);
 
   const handleSaveName = async () => {
@@ -79,6 +88,13 @@ export default function Home() {
     { id: 'settings', title: 'Ajustes', icon: 'settings', color: '#64748b', href: '/settings' },
   ];
 
+  const commitData = consistencyDates.map(dateStr => ({
+    date: dateStr.split('T')[0], // Ensure just YYYY-MM-DD
+    count: 1
+  }));
+
+  const screenWidth = Dimensions.get('window').width;
+
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.content}>
@@ -98,6 +114,30 @@ export default function Home() {
           </View>
           <Ionicons name="play-circle" size={48} color="white" />
         </Pressable>
+
+        {commitData.length > 0 && (
+          <View style={styles.chartContainer}>
+            <Text style={styles.sectionTitle}>Tu Constancia</Text>
+            <View style={styles.chartWrapper}>
+              <ContributionGraph
+                values={commitData}
+                endDate={new Date()}
+                numDays={105}
+                width={screenWidth - 80}
+                height={220}
+                chartConfig={{
+                  backgroundColor: theme.colors.card,
+                  backgroundGradientFrom: theme.colors.card,
+                  backgroundGradientTo: theme.colors.card,
+                  color: (opacity = 1) => `rgba(16, 185, 129, ${opacity})`,
+                  labelColor: (opacity = 1) => theme.colors.textSecondary,
+                  strokeWidth: 2,
+                }}
+                tooltipDataAttrs={() => ({})}
+              />
+            </View>
+          </View>
+        )}
 
         <Text style={styles.sectionTitle}>Tu Gimnasio</Text>
         <View style={styles.grid}>
@@ -157,6 +197,9 @@ const getStyles = (theme: any) => StyleSheet.create({
   heroContent: { flex: 1 },
   heroTitle: { color: 'white', fontSize: 20, fontWeight: 'bold', marginBottom: 4 },
   heroSub: { color: '#ecfdf5', fontSize: 14 },
+
+  chartContainer: { marginBottom: 32 },
+  chartWrapper: { backgroundColor: theme.colors.card, borderRadius: 16, padding: 16, alignItems: 'center', elevation: 2 },
 
   sectionTitle: { color: theme.colors.text, fontSize: 20, fontWeight: 'bold', marginBottom: 16 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },

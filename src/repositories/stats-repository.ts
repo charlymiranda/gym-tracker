@@ -20,6 +20,26 @@ export class StatsRepository {
       totalVolume: volRes?.total || 0
     };
   }
+
+  async getConsistencyDates(): Promise<string[]> {
+    const raw = await this.db.getAllAsync<{ date: string }>(
+      'SELECT DISTINCT date(start_time) as date FROM workout_sessions WHERE status = "completed" AND start_time IS NOT NULL'
+    );
+    return raw.map(r => r.date).filter(Boolean);
+  }
+
+  async getMonthlyVolume(): Promise<{ month: string, volume: number }[]> {
+    const raw = await this.db.getAllAsync<{ month: string, volume: number }>(`
+      SELECT strftime('%Y-%m', ws.start_time) as month, SUM(s.weight * s.reps) as volume
+      FROM workout_sessions ws
+      JOIN workout_sets s ON s.session_id = ws.id
+      WHERE ws.status = "completed" AND s.is_completed = 1 AND s.weight > 0 AND s.reps > 0
+        AND ws.start_time >= date('now', '-6 months')
+      GROUP BY month
+      ORDER BY month ASC
+    `);
+    return raw.map(r => ({ month: r.month, volume: r.volume }));
+  }
 }
 
 export class ProgressRepository {

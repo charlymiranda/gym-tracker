@@ -1,26 +1,35 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Dimensions } from 'react-native';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { StatsRepository, GeneralStats } from '../../src/repositories/stats-repository';
 import { useTheme } from '../../src/themes/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
+import { LineChart } from 'react-native-chart-kit';
 
 export default function StatsScreen() {
   const { theme } = useTheme();
   const styles = getStyles(theme);
   const db = useSQLiteContext();
   const [stats, setStats] = useState<GeneralStats | null>(null);
+  const [monthlyVols, setMonthlyVols] = useState<{ month: string, volume: number }[]>([]);
 
   useFocusEffect(
     useCallback(() => {
       const repo = new StatsRepository(db);
       repo.getGeneralStats().then(setStats).catch(console.error);
+      repo.getMonthlyVolume().then(setMonthlyVols).catch(console.error);
     }, [db])
   );
 
+  const screenWidth = Dimensions.get('window').width;
+
+  // Si no hay data para gráfica (ej app nueva vacía), montamos un placeholder de ceros
+  const labels = monthlyVols.length > 0 ? monthlyVols.map(m => m.month.split('-')[1]) : ['N/A'];
+  const dataset = monthlyVols.length > 0 ? monthlyVols.map(m => m.volume) : [0];
+
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 40 }}>
       <Text style={styles.headerTitle}>Resumen General</Text>
       
       <View style={styles.grid}>
@@ -42,7 +51,33 @@ export default function StatsScreen() {
           <Text style={styles.statLabel}>Volumen Total Levantado</Text>
         </View>
       </View>
-    </View>
+
+      <Text style={styles.chartTitle}>Volumen Mensual (Progreso)</Text>
+      <View style={styles.chartWrapper}>
+        <LineChart
+          data={{
+            labels: labels,
+            datasets: [{ data: dataset }]
+          }}
+          width={screenWidth - 40} // from padding
+          height={220}
+          yAxisSuffix="k"
+          yAxisInterval={1}
+          chartConfig={{
+            backgroundColor: theme.colors.card,
+            backgroundGradientFrom: theme.colors.card,
+            backgroundGradientTo: theme.colors.card,
+            decimalPlaces: 0,
+            color: (opacity = 1) => theme.colors.primary,
+            labelColor: (opacity = 1) => theme.colors.textSecondary,
+            style: { borderRadius: 16 },
+            propsForDots: { r: "6", strokeWidth: "2", stroke: theme.colors.primary }
+          }}
+          bezier
+          style={{ marginVertical: 8, borderRadius: 16 }}
+        />
+      </View>
+    </ScrollView>
   );
 }
 
@@ -52,5 +87,7 @@ const getStyles = (theme: any) => StyleSheet.create({
   grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
   statCard: { width: '48%', backgroundColor: theme.colors.card, padding: 20, borderRadius: theme.borderRadius.lg, alignItems: 'center', marginBottom: 16, elevation: 2 },
   statValue: { fontSize: 28, fontWeight: 'bold', color: theme.colors.text, marginTop: 12 },
-  statLabel: { fontSize: 12, color: theme.colors.textSecondary, textTransform: 'uppercase', marginTop: 4, textAlign: 'center' }
+  statLabel: { fontSize: 12, color: theme.colors.textSecondary, textTransform: 'uppercase', marginTop: 4, textAlign: 'center' },
+  chartTitle: { fontSize: 18, fontWeight: 'bold', color: theme.colors.text, marginVertical: 16, marginTop: 32 },
+  chartWrapper: { alignItems: 'center', backgroundColor: theme.colors.card, borderRadius: 16, padding: 8, elevation: 2 }
 });
